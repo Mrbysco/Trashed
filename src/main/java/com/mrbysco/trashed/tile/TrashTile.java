@@ -163,7 +163,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         if (this.world != null && !this.world.isRemote) {
             if (!this.isOnDeletionCooldown() && this.getBlockState().get(HopperBlock.ENABLED)) {
                 boolean flag = false;
-                
+
                 if (!this.isFull()) {
                     flag |= p_200109_1_.get();
                 }
