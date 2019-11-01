@@ -222,11 +222,11 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     private void updateState(World worldIn, BlockPos pos, BlockState state) {
         boolean flag = !worldIn.isBlockPowered(pos);
         if (flag != state.get(ENABLED)) {
-            worldIn.setBlockState(pos, state.with(ENABLED, Boolean.valueOf(flag)), 4);
+            worldIn.setBlockState(pos, state.with(ENABLED, Boolean.valueOf(flag)));
             if(state.get(TYPE) == TrashType.BOTTOM) {
-                worldIn.setBlockState(pos.up(), state.with(ENABLED, flag), 4);
+                worldIn.setBlockState(pos.up(), state.with(ENABLED, flag));
             } else if (state.get(TYPE) == TrashType.TOP) {
-                worldIn.setBlockState(pos.down(), state.with(ENABLED, flag), 4);
+                worldIn.setBlockState(pos.down(), state.with(ENABLED, flag));
             }
         }
 
