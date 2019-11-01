@@ -43,13 +43,18 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     private static final VoxelShape BOTTOM_PLATE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 0.5D, 14.0D);
 
     private static final VoxelShape SINGLE_INSIDE = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 13.0D, 13.5D);
+    private static final VoxelShape SINGLE_INSIDE_HOLLOW = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 12.0D, 13.5D);
     private static final VoxelShape SINGLE_OUTSIDE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 13.0D, 14.0D);
     private static final VoxelShape BOTTOM_INSIDE = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 16.0D, 13.5D);
+    private static final VoxelShape BOTTOM_INSIDE_HOLLOW = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 15.0D, 13.5D);
     private static final VoxelShape BOTTOM_OUTSIDE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
 
     private static final VoxelShape SINGLE_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(SINGLE_OUTSIDE, SINGLE_INSIDE, IBooleanFunction.ONLY_FIRST));
+    private static final VoxelShape SINGLE_DISABLED_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(SINGLE_OUTSIDE, SINGLE_INSIDE_HOLLOW, IBooleanFunction.ONLY_FIRST));
     private static final VoxelShape TOP_SHAPE = VoxelShapes.combineAndSimplify(SINGLE_OUTSIDE, SINGLE_INSIDE, IBooleanFunction.ONLY_FIRST);
+    private static final VoxelShape TOP_DISABLED_SHAPE = VoxelShapes.combineAndSimplify(SINGLE_OUTSIDE, SINGLE_INSIDE_HOLLOW, IBooleanFunction.ONLY_FIRST);
     private static final VoxelShape BOTTOM_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(BOTTOM_OUTSIDE, BOTTOM_INSIDE, IBooleanFunction.ONLY_FIRST));
+    private static final VoxelShape BOTTOM_DISABLED_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(BOTTOM_OUTSIDE, BOTTOM_INSIDE_HOLLOW, IBooleanFunction.ONLY_FIRST));
 
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final EnumProperty<TrashType> TYPE = EnumProperty.create("type", TrashType.class);
@@ -62,13 +67,24 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-        switch(state.get(TYPE)) {
-            default:
-                return SINGLE_SHAPE;
-            case BOTTOM:
-                return BOTTOM_SHAPE;
-            case TOP:
-                return TOP_SHAPE;
+        if(state.get(ENABLED)) {
+            switch(state.get(TYPE)) {
+                default:
+                    return SINGLE_SHAPE;
+                case BOTTOM:
+                    return BOTTOM_SHAPE;
+                case TOP:
+                    return TOP_SHAPE;
+            }
+        } else {
+            switch(state.get(TYPE)) {
+                default:
+                    return SINGLE_DISABLED_SHAPE;
+                case BOTTOM:
+                    return BOTTOM_DISABLED_SHAPE;
+                case TOP:
+                    return TOP_DISABLED_SHAPE;
+            }
         }
     }
 
