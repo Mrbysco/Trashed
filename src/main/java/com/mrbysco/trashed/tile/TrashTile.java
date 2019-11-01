@@ -4,6 +4,7 @@ import com.mrbysco.trashed.block.TrashBlock;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.HopperBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -30,6 +31,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 public class TrashTile extends LockableLootTileEntity implements ITickableTileEntity {
     private NonNullList<ItemStack> trashContents = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
@@ -119,46 +121,66 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     @Override
     public void tick() {
-        int i = this.pos.getX();
-        int j = this.pos.getY();
-        int k = this.pos.getZ();
-
         if (this.world != null && !this.world.isRemote) {
             --this.deletionCooldown;
             this.tickedGameTime = this.world.getGameTime();
             if (!this.isOnDeletionCooldown()) {
                 this.setDeletionCooldown(0);
-                this.removeItem();
+                this.updateTrash(() -> {
+                    return removeItem();
+                });
             }
-
         }
     }
 
-    private void removeItem() {
-        for(int i = 0; i < this.getSizeInventory(); i++) {
-            if(!trashContents.get(i).isEmpty()) {
-                ItemStack stack = trashContents.get(i);
-                stack.shrink(1);
-                trashContents.set(i, stack);
-                break;
+    private boolean removeItem() {
+        if(!this.isEmpty()) {
+            for(int i = 0; i < this.getSizeInventory(); i++) {
+                if(!trashContents.get(i).isEmpty()) {
+                    ItemStack stack = trashContents.get(i);
+                    stack.shrink(1);
+                    trashContents.set(i, stack);
+                    return true;
+                }
             }
+            return false;
         }
-
-        this.setDeletionCooldown(8);
-        this.markDirty();
+        return false;
     }
 
     public void onEntityCollision(Entity entity) {
         if (entity instanceof ItemEntity) {
             BlockPos blockpos = this.getPos();
             if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset((double)(-blockpos.getX()), (double)(-blockpos.getY()), (double)(-blockpos.getZ()))), this.getCollectionArea(), IBooleanFunction.AND)) {
-                if(this.getBlockState().get(TrashBlock.ENABLED) && !this.isFull() && !this.isOnDeletionCooldown())
-                this.captureItem(this, (ItemEntity)entity);
-                this.setDeletionCooldown(8);
-                this.markDirty();
+                this.updateTrash(() -> {
+                    return captureItem(this, (ItemEntity)entity);
+                });
             }
         }
     }
+
+    private boolean updateTrash(Supplier<Boolean> p_200109_1_) {
+        if (this.world != null && !this.world.isRemote) {
+            if (!this.isOnDeletionCooldown() && this.getBlockState().get(HopperBlock.ENABLED)) {
+                boolean flag = false;
+                
+                if (!this.isFull()) {
+                    flag |= p_200109_1_.get();
+                }
+
+                if (flag) {
+                    this.setDeletionCooldown(8);
+                    this.markDirty();
+                    return true;
+                }
+            }
+
+            return false;
+        } else {
+            return false;
+        }
+    }
+
     public static boolean captureItem(IInventory inv, ItemEntity itemEnt) {
         boolean flag = false;
         ItemStack itemstack = itemEnt.getItem().copy();
