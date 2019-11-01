@@ -23,6 +23,7 @@ public class TrashedRegistry {
     public static final RegistryObject<Block> TRASH_CAN = BLOCKS.register("trash_can", () ->  new TrashBlock(blockBuilder()));
     public static final RegistryObject<Item> TRASH_CAN_ITEM  = ITEMS.register("trash_can", () -> new BlockItem(TRASH_CAN.get(), itemProperties));
     public static final RegistryObject<TileEntityType<TrashTile>> TRASH_TILE = TILES.register("trash_can", () -> TileEntityType.Builder.create(() -> new TrashTile(), TRASH_CAN.get()).build(null));
+    public static final RegistryObject<TileEntityType<TrashTile>> TRASH_SLAVE_TILE = TILES.register("trash_slave_tile", () -> TileEntityType.Builder.create(() -> new TrashTile(), TRASH_CAN.get()).build(null));
 
     private static Block.Properties blockBuilder() { return Block.Properties.create(Material.ROCK).hardnessAndResistance(2.0F, 6.0F); }
 }

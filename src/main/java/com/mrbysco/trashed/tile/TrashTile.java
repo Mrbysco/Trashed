@@ -1,11 +1,9 @@
 package com.mrbysco.trashed.tile;
 
 import com.mrbysco.trashed.block.TrashBlock;
-import com.mrbysco.trashed.block.TrashType;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.HopperBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,7 +17,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.LockableLootTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.NonNullList;
@@ -91,26 +88,25 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         if (!(state.getBlock() instanceof TrashBlock)) {
             return new net.minecraftforge.items.wrapper.InvWrapper(this);
         }
-        TrashType type = state.get(TrashBlock.TYPE);
-        if (type != TrashType.SINGLE) {
-            BlockPos opos = this.getPos().offset(TrashBlock.getDirectionToAttached(state));
-            BlockState ostate = this.getWorld().getBlockState(opos);
-            if (state.getBlock() == ostate.getBlock()) {
-                TrashType otype = ostate.get(TrashBlock.TYPE);
-                if (otype != TrashType.SINGLE && type != otype && state.get(TrashBlock.HORIZONTAL_FACING) == ostate.get(TrashBlock.HORIZONTAL_FACING)) {
-                    TileEntity ote = this.getWorld().getTileEntity(opos);
-                    if (ote instanceof TrashTile) {
-                        IInventory top = type == TrashType.BOTTOM ? this : (IInventory)ote;
-                        IInventory bottom = type == TrashType.BOTTOM ? (IInventory)ote : this;
-                        return new net.minecraftforge.items.wrapper.CombinedInvWrapper(
-                                new net.minecraftforge.items.wrapper.InvWrapper(top),
-                                new net.minecraftforge.items.wrapper.InvWrapper(bottom));
-                    }
-                }
-            }
-        }
         return new net.minecraftforge.items.wrapper.InvWrapper(this);
     }
+
+    //    @Nullable
+//    @Override
+//    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+//        return world.getTileEntity(master).getCapability(capability, facing);
+//    }
+//
+//    @Override
+//    public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
+//        if (!this.removed && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+//            if (this.trashHandler == null) {
+//                this.trashHandler = net.minecraftforge.common.util.LazyOptional.of(this::createHandler);
+//            }
+//            return this.trashHandler.cast();
+//        }
+//        return super.getCapability(cap, side);
+//    }
 
     @Override
     public int getSizeInventory() {
@@ -173,7 +169,8 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         if (entity instanceof ItemEntity) {
             BlockPos blockpos = this.getPos();
             if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset((double)(-blockpos.getX()), (double)(-blockpos.getY()), (double)(-blockpos.getZ()))), this.getCollectionArea(), IBooleanFunction.AND)) {
-                if(!this.isFull() && !this.isOnDeletionCooldown()) {
+                if(!this.isOnDeletionCooldown() && this.getBlockState().get(TrashBlock.ENABLED)) {
+                    System.out.println("Capturing");
                     captureItem(this, (ItemEntity)entity);
                 }
             }

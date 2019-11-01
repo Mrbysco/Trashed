@@ -1,6 +1,7 @@
 package com.mrbysco.trashed.block;
 
 import com.mrbysco.trashed.Trashed;
+import com.mrbysco.trashed.tile.TrashSlaveTile;
 import com.mrbysco.trashed.tile.TrashTile;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -21,7 +22,6 @@ import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.EnumProperty;
 import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.state.properties.ChestType;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -52,7 +52,6 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     private static final VoxelShape TOP_SHAPE = VoxelShapes.combineAndSimplify(SINGLE_OUTSIDE, SINGLE_INSIDE, IBooleanFunction.ONLY_FIRST);
     private static final VoxelShape BOTTOM_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(BOTTOM_OUTSIDE, BOTTOM_INSIDE, IBooleanFunction.ONLY_FIRST));
 
-
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final EnumProperty<TrashType> TYPE = EnumProperty.create("type", TrashType.class);
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
@@ -79,7 +78,7 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
         if (worldIn.isRemote) {
             return true;
         } else {
-            TileEntity tile = worldIn.getTileEntity(pos);
+            TileEntity tile = getTrashTile(worldIn, state, pos);
             if (tile instanceof TrashTile) {
                 NetworkHooks.openGui((ServerPlayerEntity) player, (TrashTile) tile, pos);
             }
@@ -96,7 +95,11 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     @Nullable
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new TrashTile();
+        if(state.get(TYPE) != TrashType.TOP) {
+            return new TrashTile();
+        } else {
+            return new TrashSlaveTile();
+        }
     }
 
     @Override
@@ -108,10 +111,10 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
                 worldIn.setBlockState(pos.down(), worldIn.getBlockState(pos.down()).with(TYPE, TrashType.SINGLE));
             }
 
-            TileEntity tile = worldIn.getTileEntity(pos);
+            TileEntity tile = getTrashTile(worldIn, state, pos);
             if (tile instanceof TrashTile) {
                 InventoryHelper.dropInventoryItems(worldIn, pos, (TrashTile)tile);
-                worldIn.updateComparatorOutputLevel(pos, this);
+                worldIn.updateComparatorOutputLevel(getTrashPos(state, pos), this);
             }
 
             super.onReplaced(state, worldIn, pos, newState, isMoving);
@@ -121,27 +124,18 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
         if (stack.hasDisplayName()) {
-            if(state.get(TYPE) == TrashType.TOP) {
-                TileEntity tile = worldIn.getTileEntity(pos.down());
-                if (tile instanceof TrashTile) {
-                    ((TrashTile)tile).setCustomName(stack.getDisplayName());
-                }
-            } else {
-                TileEntity tile = worldIn.getTileEntity(pos);
-                if (tile instanceof TrashTile) {
-                    ((TrashTile)tile).setCustomName(stack.getDisplayName());
-                }
+            TileEntity tile = getTrashTile(worldIn, state, pos);
+            if (tile instanceof TrashTile) {
+                ((TrashTile)tile).setCustomName(stack.getDisplayName());
             }
         }
     }
 
     @Override
     public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entity) {
-        if(!state.get(ENABLED)) {
-            TileEntity tile = worldIn.getTileEntity(pos);
-            if (tile instanceof TrashTile) {
-                ((TrashTile)tile).onEntityCollision(entity);
-            }
+        TileEntity tile = getTrashTile(worldIn, state, pos);
+        if (tile instanceof TrashTile) {
+            ((TrashTile)tile).onEntityCollision(entity);
         }
     }
 
@@ -231,17 +225,12 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
         if (flag != state.get(ENABLED)) {
             if(state.get(TYPE) == TrashType.SINGLE) {
                 Trashed.LOGGER.info("Testing");
-                worldIn.setBlockState(pos, state.with(ENABLED, flag), 4);
+                worldIn.setBlockState(pos, state.with(ENABLED, flag));
             } else {
-                Trashed.LOGGER.info("Testing2");
-                worldIn.setBlockState(pos, state.with(ENABLED, flag), 4);
-                if(state.get(TYPE) == TrashType.BOTTOM) {
-                    Trashed.LOGGER.info("Testing3");
+                if(state.get(TYPE) != TrashType.TOP) {
                     worldIn.setBlockState(pos.up(), state.with(ENABLED, flag), 4);
-                } else {
-                    Trashed.LOGGER.info("Testing4");
-                    worldIn.setBlockState(pos.down(), state.with(ENABLED, flag), 4);
                 }
+                worldIn.setBlockState(pos, state.with(ENABLED, flag), 4);
             }
         }
     }
@@ -258,7 +247,7 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
 
     @Override
     public int getComparatorInputOverride(BlockState state, World worldIn, BlockPos pos) {
-        return Container.calcRedstone(worldIn.getTileEntity(pos));
+        return Container.calcRedstone(getTrashTile(worldIn, state, pos));
     }
 
     @Override
@@ -266,12 +255,19 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
         return true;
     }
 
-    public static Direction getDirectionToAttached(BlockState state) {
-        switch(state.get(TYPE)) {
-            default:
-                return Direction.DOWN;
-            case BOTTOM:
-                return Direction.UP;
+    public BlockPos getTrashPos(BlockState state, BlockPos pos) {
+        if(state.get(TYPE) == TrashType.TOP) {
+            return pos.down();
+        } else {
+            return pos;
+        }
+    }
+
+    public TileEntity getTrashTile(World worldIn, BlockState state, BlockPos pos) {
+        if(state.get(TYPE) == TrashType.TOP) {
+            return worldIn.getTileEntity(pos.down());
+        } else {
+            return worldIn.getTileEntity(pos);
         }
     }
 }
