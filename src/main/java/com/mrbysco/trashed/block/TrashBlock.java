@@ -1,6 +1,5 @@
 package com.mrbysco.trashed.block;
 
-import com.mrbysco.trashed.Trashed;
 import com.mrbysco.trashed.tile.TrashSlaveTile;
 import com.mrbysco.trashed.tile.TrashTile;
 import net.minecraft.block.Block;
@@ -43,9 +42,9 @@ import javax.annotation.Nullable;
 public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     private static final VoxelShape BOTTOM_PLATE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 0.5D, 14.0D);
 
-    private static final VoxelShape SINGLE_INSIDE = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.0D, 13.0D, 13.0D);
+    private static final VoxelShape SINGLE_INSIDE = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 13.0D, 13.5D);
     private static final VoxelShape SINGLE_OUTSIDE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 13.0D, 14.0D);
-    private static final VoxelShape BOTTOM_INSIDE = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.0D, 16.0D, 13.0D);
+    private static final VoxelShape BOTTOM_INSIDE = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 16.0D, 13.5D);
     private static final VoxelShape BOTTOM_OUTSIDE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
 
     private static final VoxelShape SINGLE_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(SINGLE_OUTSIDE, SINGLE_INSIDE, IBooleanFunction.ONLY_FIRST));
@@ -132,10 +131,10 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     }
 
     @Override
-    public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entity) {
-        TileEntity tile = getTrashTile(worldIn, state, pos);
-        if (tile instanceof TrashTile) {
-            ((TrashTile)tile).onEntityCollision(entity);
+    public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entityIn) {
+        TileEntity tileentity = getTrashTile(worldIn, state, pos);
+        if (tileentity instanceof TrashTile) {
+            ((TrashTile)tileentity).onEntityCollision(entityIn);
         }
     }
 
@@ -223,20 +222,18 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     private void updateState(World worldIn, BlockPos pos, BlockState state) {
         boolean flag = !worldIn.isBlockPowered(pos);
         if (flag != state.get(ENABLED)) {
-            if(state.get(TYPE) == TrashType.SINGLE) {
-                Trashed.LOGGER.info("Testing");
-                worldIn.setBlockState(pos, state.with(ENABLED, flag));
-            } else {
-                if(state.get(TYPE) != TrashType.TOP) {
-                    worldIn.setBlockState(pos.up(), state.with(ENABLED, flag), 4);
-                }
-                worldIn.setBlockState(pos, state.with(ENABLED, flag), 4);
+            worldIn.setBlockState(pos, state.with(ENABLED, Boolean.valueOf(flag)), 4);
+            if(state.get(TYPE) == TrashType.BOTTOM) {
+                worldIn.setBlockState(pos.up(), state.with(ENABLED, flag), 4);
+            } else if (state.get(TYPE) == TrashType.TOP) {
+                worldIn.setBlockState(pos.down(), state.with(ENABLED, flag), 4);
             }
         }
+
     }
 
     @Override
-    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block pos2, BlockPos pos3, boolean bool) {
+    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         this.updateState(worldIn, pos, state);
     }
 

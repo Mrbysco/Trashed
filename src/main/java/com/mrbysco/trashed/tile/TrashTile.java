@@ -91,23 +91,6 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         return new net.minecraftforge.items.wrapper.InvWrapper(this);
     }
 
-    //    @Nullable
-//    @Override
-//    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-//        return world.getTileEntity(master).getCapability(capability, facing);
-//    }
-//
-//    @Override
-//    public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
-//        if (!this.removed && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-//            if (this.trashHandler == null) {
-//                this.trashHandler = net.minecraftforge.common.util.LazyOptional.of(this::createHandler);
-//            }
-//            return this.trashHandler.cast();
-//        }
-//        return super.getCapability(cap, side);
-//    }
-
     @Override
     public int getSizeInventory() {
         return this.trashContents.size();
@@ -169,14 +152,13 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         if (entity instanceof ItemEntity) {
             BlockPos blockpos = this.getPos();
             if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset((double)(-blockpos.getX()), (double)(-blockpos.getY()), (double)(-blockpos.getZ()))), this.getCollectionArea(), IBooleanFunction.AND)) {
-                if(!this.isOnDeletionCooldown() && this.getBlockState().get(TrashBlock.ENABLED)) {
-                    System.out.println("Capturing");
-                    captureItem(this, (ItemEntity)entity);
-                }
+                if(this.getBlockState().get(TrashBlock.ENABLED) && !this.isFull() && !this.isOnDeletionCooldown())
+                this.captureItem(this, (ItemEntity)entity);
+                this.setDeletionCooldown(8);
+                this.markDirty();
             }
         }
     }
-
     public static boolean captureItem(IInventory inv, ItemEntity itemEnt) {
         boolean flag = false;
         ItemStack itemstack = itemEnt.getItem().copy();
@@ -309,11 +291,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     }
 
     public VoxelShape getCollectionArea() {
-        return Block.makeCuboidShape(3.0D, 0.0D, 3.0D, 13.0D, 24.0D, 13.0D);
-    }
-
-    public VoxelShape getCollectionArea2() {
-        return Block.makeCuboidShape(3.0D, 0.0D, 3.0D, 13.0D, 48.0D, 13.0D);
+        return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
     }
 
     public long getLastUpdateTime() {
