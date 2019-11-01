@@ -1,6 +1,7 @@
 package com.mrbysco.trashed.tile;
 
 import com.mrbysco.trashed.block.TrashBlock;
+import com.mrbysco.trashed.block.TrashType;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -75,7 +76,9 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     @Override
     public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
-        if (!this.removed && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+        if(!this.world.getBlockState(this.pos).get(TrashBlock.ENABLED)) {
+            return super.getCapability(cap, side);
+        } else if (!this.removed && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             if (this.trashHandler == null) {
                 this.trashHandler = net.minecraftforge.common.util.LazyOptional.of(this::createHandler);
             }
@@ -151,9 +154,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         if (entity instanceof ItemEntity) {
             BlockPos blockpos = this.getPos();
             if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset((double)(-blockpos.getX()), (double)(-blockpos.getY()), (double)(-blockpos.getZ()))), this.getCollectionArea(), IBooleanFunction.AND)) {
-                this.updateTrash(() -> {
-                    return captureItem(this, (ItemEntity)entity);
-                });
+                this.updatePickupTrash(() -> captureItem(this, (ItemEntity)entity));
             }
         }
     }
@@ -161,6 +162,28 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     private boolean updateTrash(Supplier<Boolean> p_200109_1_) {
         if (this.world != null && !this.world.isRemote) {
             if (!this.isOnDeletionCooldown() && this.getBlockState().get(TrashBlock.ENABLED)) {
+                boolean flag = false;
+
+                if (!this.isFull()) {
+                    flag |= p_200109_1_.get();
+                }
+
+                if (flag) {
+                    this.setDeletionCooldown(8);
+                    this.markDirty();
+                    return true;
+                }
+            }
+
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean updatePickupTrash(Supplier<Boolean> p_200109_1_) {
+        if (this.world != null && !this.world.isRemote) {
+            if (!this.isFull() && this.getBlockState().get(TrashBlock.ENABLED)) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
@@ -312,7 +335,11 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     }
 
     public VoxelShape getCollectionArea() {
-        return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
+        if(this.world.getBlockState(this.pos).get(TrashBlock.TYPE) == TrashType.BOTTOM) {
+            return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 48.0D, 13.5D);
+        } else {
+            return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
+        }
     }
 
     public long getLastUpdateTime() {

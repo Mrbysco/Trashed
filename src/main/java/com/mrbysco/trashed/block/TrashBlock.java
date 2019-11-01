@@ -218,7 +218,7 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
         BlockState bottomBlock = worldIn.getBlockState(pos.down());
         if(bottomBlock.getBlock() == this && bottomBlock.get(TYPE) == TrashType.SINGLE) {
             worldIn.setBlockState(pos.down(), bottomBlock.with(TYPE, TrashType.BOTTOM));
-            return this.getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite()).with(ENABLED, true).with(TYPE, TrashType.TOP);
+            return this.getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite()).with(ENABLED, bottomBlock.get(ENABLED)).with(TYPE, TrashType.TOP);
         } else {
             return this.getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite()).with(ENABLED, true);
         }
@@ -238,14 +238,24 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     private void updateState(World worldIn, BlockPos pos, BlockState state) {
         boolean flag = !worldIn.isBlockPowered(pos);
         if (flag != state.get(ENABLED)) {
-            worldIn.setBlockState(pos, state.with(ENABLED, Boolean.valueOf(flag)));
             if(state.get(TYPE) == TrashType.BOTTOM) {
-                worldIn.setBlockState(pos.up(), state.with(ENABLED, flag));
+                boolean flag2 = !worldIn.isBlockPowered(pos.up());
+                if(flag2) {
+                    worldIn.setBlockState(pos, state.with(ENABLED, Boolean.valueOf(flag)));
+                    BlockState state2 = worldIn.getBlockState(pos.up());
+                    worldIn.setBlockState(pos.up(), state2.with(ENABLED, flag));
+                }
             } else if (state.get(TYPE) == TrashType.TOP) {
-                worldIn.setBlockState(pos.down(), state.with(ENABLED, flag));
+                boolean flag2 = !worldIn.isBlockPowered(pos.down());
+                if(flag2) {
+                    worldIn.setBlockState(pos, state.with(ENABLED, Boolean.valueOf(flag)));
+                    BlockState state2 = worldIn.getBlockState(pos.down());
+                    worldIn.setBlockState(pos.down(), state2.with(ENABLED, flag));
+                }
+            } else {
+                worldIn.setBlockState(pos, state.with(ENABLED, Boolean.valueOf(flag)));
             }
         }
-
     }
 
     @Override
