@@ -4,7 +4,6 @@ import com.mrbysco.trashed.block.TrashBlock;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.HopperBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -161,7 +160,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     private boolean updateTrash(Supplier<Boolean> p_200109_1_) {
         if (this.world != null && !this.world.isRemote) {
-            if (!this.isOnDeletionCooldown() && this.getBlockState().get(HopperBlock.ENABLED)) {
+            if (!this.isOnDeletionCooldown() && this.getBlockState().get(TrashBlock.ENABLED)) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
