@@ -7,9 +7,10 @@ modId="trashed"
 version="${file.jarVersion}"
 displayName="Trashed"
 displayURL="https://minecraft.curseforge.com/projects/trashed"
+logoFile="logo.png"
 authors="svennieke, Mrbysco"
 description='''
-Just a little functional decoration.
+Adding Trash Can's to Minecraft.
 '''
 
 [[dependencies.statues]]

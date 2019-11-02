@@ -1,4 +1,6 @@
 {
   "block.trashed.trash_can": "Trash Can",
-  "trashed.container.trashcan": "Trash Can"
+  "trashed.container.trashcan": "Trash Can",
+  "trashed.trash_tooltip": "Jump in to trash yourself",
+  "death.attack.trashed": "%1$s was thrown into the trash"
 }
