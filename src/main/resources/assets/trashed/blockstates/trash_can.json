@@ -7,22 +7,22 @@
       "model": "trashed:block/trash_can"
     },
     "enabled=false,facing=south,type=single,waterlogged=false": {
-      "model": "trashed:block/trash_can_disabled"
+      "model": "trashed:block/trash_can_disabled", "y": 180
     },
     "enabled=true,facing=south,type=single,waterlogged=false": {
-      "model": "trashed:block/trash_can"
+      "model": "trashed:block/trash_can", "y": 180
     },
     "enabled=false,facing=west,type=single,waterlogged=false": {
-      "model": "trashed:block/trash_can_disabled"
+      "model": "trashed:block/trash_can_disabled", "y": 270
     },
     "enabled=true,facing=west,type=single,waterlogged=false": {
-      "model": "trashed:block/trash_can"
+      "model": "trashed:block/trash_can", "y": 270
     },
     "enabled=false,facing=east,type=single,waterlogged=false": {
-      "model": "trashed:block/trash_can_disabled"
+      "model": "trashed:block/trash_can_disabled", "y": 90
     },
     "enabled=true,facing=east,type=single,waterlogged=false": {
-      "model": "trashed:block/trash_can"
+      "model": "trashed:block/trash_can", "y": 90
     },
     "enabled=false,facing=north,type=bottom,waterlogged=false": {
       "model": "trashed:block/trash_can_bottom_disabled"
@@ -31,22 +31,22 @@
       "model": "trashed:block/trash_can_bottom"
     },
     "enabled=false,facing=south,type=bottom,waterlogged=false": {
-      "model": "trashed:block/trash_can_bottom_disabled"
+      "model": "trashed:block/trash_can_bottom_disabled", "y": 180
     },
     "enabled=true,facing=south,type=bottom,waterlogged=false": {
-      "model": "trashed:block/trash_can_bottom"
+      "model": "trashed:block/trash_can_bottom", "y": 180
     },
     "enabled=false,facing=west,type=bottom,waterlogged=false": {
-      "model": "trashed:block/trash_can_bottom_disabled"
+      "model": "trashed:block/trash_can_bottom_disabled", "y": 270
     },
     "enabled=true,facing=west,type=bottom,waterlogged=false": {
-      "model": "trashed:block/trash_can_bottom"
+      "model": "trashed:block/trash_can_bottom", "y": 270
     },
     "enabled=false,facing=east,type=bottom,waterlogged=false": {
-      "model": "trashed:block/trash_can_bottom_disabled"
+      "model": "trashed:block/trash_can_bottom_disabled", "y": 90
     },
     "enabled=true,facing=east,type=bottom,waterlogged=false": {
-      "model": "trashed:block/trash_can_bottom"
+      "model": "trashed:block/trash_can_bottom", "y": 90
     },
     "enabled=false,facing=north,type=top,waterlogged=false": {
       "model": "trashed:block/trash_can_top_disabled"
@@ -55,22 +55,22 @@
       "model": "trashed:block/trash_can_top"
     },
     "enabled=false,facing=south,type=top,waterlogged=false": {
-      "model": "trashed:block/trash_can_top_disabled"
+      "model": "trashed:block/trash_can_top_disabled", "y": 180
     },
     "enabled=true,facing=south,type=top,waterlogged=false": {
-      "model": "trashed:block/trash_can_top"
+      "model": "trashed:block/trash_can_top", "y": 180
     },
     "enabled=false,facing=west,type=top,waterlogged=false": {
-      "model": "trashed:block/trash_can_top_disabled"
+      "model": "trashed:block/trash_can_top_disabled", "y": 270
     },
     "enabled=true,facing=west,type=top,waterlogged=false": {
-      "model": "trashed:block/trash_can_top"
+      "model": "trashed:block/trash_can_top", "y": 270
     },
     "enabled=false,facing=east,type=top,waterlogged=false": {
-      "model": "trashed:block/trash_can_top_disabled"
+      "model": "trashed:block/trash_can_top_disabled", "y": 90
     },
     "enabled=true,facing=east,type=top,waterlogged=false": {
-      "model": "trashed:block/trash_can_top"
+      "model": "trashed:block/trash_can_top", "y": 90
     },
     "enabled=false,facing=north,type=single,waterlogged=true": {
       "model": "trashed:block/trash_can_disabled"
@@ -79,22 +79,22 @@
       "model": "trashed:block/trash_can"
     },
     "enabled=false,facing=south,type=single,waterlogged=true": {
-      "model": "trashed:block/trash_can_disabled"
+      "model": "trashed:block/trash_can_disabled", "y": 180
     },
     "enabled=true,facing=south,type=single,waterlogged=true": {
-      "model": "trashed:block/trash_can"
+      "model": "trashed:block/trash_can", "y": 180
     },
     "enabled=false,facing=west,type=single,waterlogged=true": {
-      "model": "trashed:block/trash_can_disabled"
+      "model": "trashed:block/trash_can_disabled", "y": 270
     },
     "enabled=true,facing=west,type=single,waterlogged=true": {
-      "model": "trashed:block/trash_can"
+      "model": "trashed:block/trash_can", "y": 270
     },
     "enabled=false,facing=east,type=single,waterlogged=true": {
-      "model": "trashed:block/trash_can_disabled"
+      "model": "trashed:block/trash_can_disabled", "y": 90
     },
     "enabled=true,facing=east,type=single,waterlogged=true": {
-      "model": "trashed:block/trash_can"
+      "model": "trashed:block/trash_can", "y": 90
     },
     "enabled=false,facing=north,type=bottom,waterlogged=true": {
       "model": "trashed:block/trash_can_bottom_disabled"
@@ -103,22 +103,22 @@
       "model": "trashed:block/trash_can_bottom"
     },
     "enabled=false,facing=south,type=bottom,waterlogged=true": {
-      "model": "trashed:block/trash_can_bottom_disabled"
+      "model": "trashed:block/trash_can_bottom_disabled", "y": 180
     },
     "enabled=true,facing=south,type=bottom,waterlogged=true": {
-      "model": "trashed:block/trash_can_bottom"
+      "model": "trashed:block/trash_can_bottom", "y": 180
     },
     "enabled=false,facing=west,type=bottom,waterlogged=true": {
-      "model": "trashed:block/trash_can_bottom_disabled"
+      "model": "trashed:block/trash_can_bottom_disabled", "y": 270
     },
     "enabled=true,facing=west,type=bottom,waterlogged=true": {
-      "model": "trashed:block/trash_can_bottom"
+      "model": "trashed:block/trash_can_bottom", "y": 270
     },
     "enabled=false,facing=east,type=bottom,waterlogged=true": {
-      "model": "trashed:block/trash_can_bottom_disabled"
+      "model": "trashed:block/trash_can_bottom_disabled", "y": 90
     },
     "enabled=true,facing=east,type=bottom,waterlogged=true": {
-      "model": "trashed:block/trash_can_bottom"
+      "model": "trashed:block/trash_can_bottom", "y": 90
     },
     "enabled=false,facing=north,type=top,waterlogged=true": {
       "model": "trashed:block/trash_can_top_disabled"
@@ -127,22 +127,22 @@
       "model": "trashed:block/trash_can_top"
     },
     "enabled=false,facing=south,type=top,waterlogged=true": {
-      "model": "trashed:block/trash_can_top_disabled"
+      "model": "trashed:block/trash_can_top_disabled", "y": 180
     },
     "enabled=true,facing=south,type=top,waterlogged=true": {
-      "model": "trashed:block/trash_can_top"
+      "model": "trashed:block/trash_can_top", "y": 180
     },
     "enabled=false,facing=west,type=top,waterlogged=true": {
-      "model": "trashed:block/trash_can_top_disabled"
+      "model": "trashed:block/trash_can_top_disabled", "y": 270
     },
     "enabled=true,facing=west,type=top,waterlogged=true": {
-      "model": "trashed:block/trash_can_top"
+      "model": "trashed:block/trash_can_top", "y": 270
     },
     "enabled=false,facing=east,type=top,waterlogged=true": {
-      "model": "trashed:block/trash_can_top_disabled"
+      "model": "trashed:block/trash_can_top_disabled", "y": 90
     },
     "enabled=true,facing=east,type=top,waterlogged=true": {
-      "model": "trashed:block/trash_can_top"
+      "model": "trashed:block/trash_can_top", "y": 90
     }
   }
 }

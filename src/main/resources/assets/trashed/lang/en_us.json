@@ -1,5 +1,7 @@
 {
   "block.trashed.trash_can": "Trash Can",
+  "block.trashed.fluid_trash_can": "Fluid Trash Can",
+  "block.trashed.energy_trash_can": "Energy Trash Can",
   "trashed.container.trashcan": "Trash Can",
   "trashed.trash_tooltip": "Jump in to trash yourself",
   "death.attack.trashed": "%1$s was thrown into the trash"

@@ -1,10 +1,10 @@
 package com.mrbysco.trashed.block;
 
+import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.tile.TrashSlaveTile;
 import com.mrbysco.trashed.tile.TrashTile;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.HorizontalBlock;
 import net.minecraft.block.IWaterLoggable;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
@@ -18,15 +18,11 @@ import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.EnumProperty;
 import net.minecraft.state.StateContainer.Builder;
-import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.IBooleanFunction;
@@ -34,6 +30,7 @@ import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
@@ -43,7 +40,7 @@ import net.minecraftforge.fml.network.NetworkHooks;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
+public class TrashBlock extends TrashBase implements IWaterLoggable {
     private static final VoxelShape BOTTOM_PLATE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 0.5D, 14.0D);
 
     private static final VoxelShape SINGLE_INSIDE = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 13.0D, 13.5D);
@@ -60,9 +57,7 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     private static final VoxelShape BOTTOM_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(BOTTOM_OUTSIDE, BOTTOM_INSIDE, IBooleanFunction.ONLY_FIRST));
     private static final VoxelShape BOTTOM_DISABLED_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(BOTTOM_OUTSIDE, BOTTOM_INSIDE_HOLLOW, IBooleanFunction.ONLY_FIRST));
 
-    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final EnumProperty<TrashType> TYPE = EnumProperty.create("type", TrashType.class);
-    public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     public TrashBlock(Properties properties) {
         super(properties);
@@ -196,39 +191,6 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     }
 
     /**
-     * Rotation section
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public BlockState rotate(BlockState state, Rotation rot) {
-        return state.with(HORIZONTAL_FACING, rot.rotate(state.get(HORIZONTAL_FACING)));
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public BlockState mirror(BlockState state, Mirror mirrorIn) {
-        return state.rotate(mirrorIn.toRotation(state.get(HORIZONTAL_FACING)));
-    }
-
-    @Override
-    protected void fillStateContainer(Builder<Block, BlockState> builder) {
-        builder.add(HORIZONTAL_FACING, WATERLOGGED, TYPE, ENABLED);
-    }
-
-    @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context) {
-        BlockPos pos = context.getPos();
-        World worldIn = context.getWorld();
-        BlockState bottomBlock = worldIn.getBlockState(pos.down());
-        if(bottomBlock.getBlock() == this && bottomBlock.get(TYPE) == TrashType.SINGLE) {
-            worldIn.setBlockState(pos.down(), bottomBlock.with(TYPE, TrashType.BOTTOM));
-            return this.getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite()).with(ENABLED, bottomBlock.get(ENABLED)).with(TYPE, TrashType.TOP);
-        } else {
-            return this.getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite()).with(ENABLED, true);
-        }
-    }
-
-    /**
      * Power section
      */
 
@@ -301,6 +263,24 @@ public class TrashBlock extends HorizontalBlock implements IWaterLoggable {
     @Override
     public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltip.add(new TranslationTextComponent("trashed.trash_tooltip"));
+        tooltip.add(new TranslationTextComponent("trashed.trash_tooltip").applyTextStyle(TextFormatting.GOLD));
+    }
+
+    @Override
+    protected void fillStateContainer(Builder<Block, BlockState> builder) {
+        builder.add(HORIZONTAL_FACING, WATERLOGGED, ENABLED, TYPE);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
+        BlockPos pos = context.getPos();
+        World worldIn = context.getWorld();
+        BlockState bottomBlock = worldIn.getBlockState(pos.down());
+        if(bottomBlock.getBlock() == this && bottomBlock.get(TYPE) == TrashType.SINGLE) {
+            worldIn.setBlockState(pos.down(), bottomBlock.with(TYPE, TrashType.BOTTOM));
+            return this.getDefaultState().with(HORIZONTAL_FACING, bottomBlock.get(HORIZONTAL_FACING)).with(ENABLED, bottomBlock.get(ENABLED)).with(TYPE, TrashType.TOP);
+        } else {
+            return this.getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite()).with(ENABLED, true);
+        }
     }
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "trashed:block/trash_can",
+  "textures": {
+	"particle": "trashed:block/fluid_trashcan",
+	"texture": "trashed:block/fluid_trashcan"
+  }
+}

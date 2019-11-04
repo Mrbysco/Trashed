@@ -6,7 +6,6 @@ import com.mrbysco.trashed.block.TrashType;
 import com.mrbysco.trashed.config.TrashedConfig;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
@@ -91,10 +90,6 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     }
 
     private net.minecraftforge.items.IItemHandlerModifiable createHandler() {
-        BlockState state = this.getBlockState();
-        if (!(state.getBlock() instanceof TrashBlock)) {
-            return new net.minecraftforge.items.wrapper.InvWrapper(this);
-        }
         return new net.minecraftforge.items.wrapper.InvWrapper(this);
     }
 

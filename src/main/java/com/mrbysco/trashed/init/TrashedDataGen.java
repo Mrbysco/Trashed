@@ -32,8 +32,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.mrbysco.trashed.init.TrashedRegistry.BLOCKS;
-import static com.mrbysco.trashed.init.TrashedRegistry.TRASH_CAN;
+import static com.mrbysco.trashed.init.TrashedRegistry.*;
 
 @EventBusSubscriber(modid = Trashed.MOD_ID, bus = Bus.MOD)
 public class TrashedDataGen {
@@ -73,6 +72,7 @@ public class TrashedDataGen {
             @Override
             protected void addTables() {
                 this.registerDropSelfLootTable(TRASH_CAN.get());
+                this.registerDropSelfLootTable(FLUID_TRASH_CAN.get());
             }
 
             @Override
@@ -90,6 +90,7 @@ public class TrashedDataGen {
         @Override
         protected void addTranslations() {
             add(TRASH_CAN.get(), "Trash Can");
+            add(FLUID_TRASH_CAN.get(), "Trash Can");
             add("trashed.container.trashcan", "Trash Can");
         }
     }
@@ -102,6 +103,7 @@ public class TrashedDataGen {
         @Override
         protected void registerModels() {
             makeTier(TRASH_CAN.get());
+            makeTier(FLUID_TRASH_CAN.get());
         }
 
         private void makeTier(Block block) {
@@ -124,10 +126,18 @@ public class TrashedDataGen {
 
         @Override
         protected void registerStatesAndModels() {
-            makeTier(TRASH_CAN.get());
+            makeTrash(TRASH_CAN.get());
+            makeTrash(FLUID_TRASH_CAN.get(), mcLoc("block/acacia_log"));
         }
 
-        private void makeTier(Block block) {
+        private void makeTrash(Block block, ResourceLocation texture) {
+            ModelFile model = getBuilder(block.getRegistryName().getPath())
+                    .parent(getExistingFile(modLoc("block/trash_can")))
+                    .texture("material", texture);
+            getVariantBuilder(block).forAllStates(state -> ConfiguredModel.builder().modelFile(model).build());
+        }
+
+        private void makeTrash(Block block) {
             ModelFile model = getBuilder(block.getRegistryName().getPath())
                     .parent(getExistingFile(modLoc("block/trash_can")));
             getVariantBuilder(block).forAllStates(state -> ConfiguredModel.builder().modelFile(model).build());

@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "enabled=false,facing=north,waterlogged=false": {
+      "model": "trashed:block/energy_trash_can_disabled"
+    },
+    "enabled=true,facing=north,waterlogged=false": {
+      "model": "trashed:block/energy_trash_can"
+    },
+    "enabled=false,facing=south,waterlogged=false": {
+      "model": "trashed:block/energy_trash_can_disabled", "y": 180
+    },
+    "enabled=true,facing=south,waterlogged=false": {
+      "model": "trashed:block/energy_trash_can", "y": 180
+    },
+    "enabled=false,facing=west,waterlogged=false": {
+      "model": "trashed:block/energy_trash_can_disabled", "y": 270
+    },
+    "enabled=true,facing=west,waterlogged=false": {
+      "model": "trashed:block/energy_trash_can", "y": 270
+    },
+    "enabled=false,facing=east,waterlogged=false": {
+      "model": "trashed:block/energy_trash_can_disabled", "y": 90
+    },
+    "enabled=true,facing=east,waterlogged=false": {
+      "model": "trashed:block/energy_trash_can", "y": 90
+    },
+    "enabled=false,facing=north,waterlogged=true": {
+      "model": "trashed:block/energy_trash_can_disabled"
+    },
+    "enabled=true,facing=north,waterlogged=true": {
+      "model": "trashed:block/energy_trash_can"
+    },
+    "enabled=false,facing=south,waterlogged=true": {
+      "model": "trashed:block/energy_trash_can_disabled", "y": 180
+    },
+    "enabled=true,facing=south,waterlogged=true": {
+      "model": "trashed:block/energy_trash_can", "y": 180
+    },
+    "enabled=false,facing=west,waterlogged=true": {
+      "model": "trashed:block/energy_trash_can_disabled", "y": 270
+    },
+    "enabled=true,facing=west,waterlogged=true": {
+      "model": "trashed:block/energy_trash_can", "y": 270
+    },
+    "enabled=false,facing=east,waterlogged=true": {
+      "model": "trashed:block/energy_trash_can_disabled", "y": 90
+    },
+    "enabled=true,facing=east,waterlogged=true": {
+      "model": "trashed:block/energy_trash_can", "y": 90
+    }
+  }
+}

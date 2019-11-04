@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "trashed:trash_can"
+          "name": "trashed:energy_trash_can"
         }
       ],
       "conditions": [
