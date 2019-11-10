@@ -1,6 +1,6 @@
 modLoader="javafml"
 loaderVersion="[28,)"
-issueTrackerURL="https://github.com/svennieke/trashed/issues"
+issueTrackerURL="https://github.com/mrbysco/trashed/issues"
 
 [[mods]]
 modId="trashed"
@@ -8,7 +8,7 @@ version="${file.jarVersion}"
 displayName="Trashed"
 displayURL="https://minecraft.curseforge.com/projects/trashed"
 logoFile="logo.png"
-authors="svennieke, Mrbysco"
+authors="ShyNieke, Mrbysco"
 description='''
 Adding Trash Can's to Minecraft.
 '''

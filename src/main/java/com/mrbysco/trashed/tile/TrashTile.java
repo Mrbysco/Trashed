@@ -370,7 +370,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     }
 
     public VoxelShape getEntityCollectionArea() {
-        return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 32.0D, 13.5D);
+        return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
     }
 
     public long getLastUpdateTime() {
