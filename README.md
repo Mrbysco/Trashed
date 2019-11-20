@@ -9,4 +9,4 @@ Trashed adds Trash Can's to Minecraft.
   - [![License](https://img.shields.io/badge/License-MIT-red.svg?style=flat)](http://opensource.org/licenses/MIT)
   
 ## Downloads ##
-Downloads are are available on [CurseForge](https://www.curseforge.com/minecraft/mc-mods/trashed)
+Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-mods/trashed)
