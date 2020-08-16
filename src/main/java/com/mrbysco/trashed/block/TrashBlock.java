@@ -11,9 +11,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.BlockItemUseContext;
@@ -21,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.EnumProperty;
 import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -33,7 +31,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkHooks;
 
@@ -88,17 +85,15 @@ public class TrashBlock extends TrashBase implements IWaterLoggable {
     }
 
     @Override
-    public boolean onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand p_220051_5_, BlockRayTraceResult p_220051_6_) {
-        if (worldIn.isRemote) {
-            return true;
-        } else {
+    public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult result) {
+        if (!worldIn.isRemote) {
             TileEntity tile = getTrashTile(worldIn, state, pos);
             if (tile instanceof TrashTile) {
                 NetworkHooks.openGui((ServerPlayerEntity) player, (TrashTile) tile, pos);
             }
 
-            return true;
         }
+        return ActionResultType.SUCCESS;
     }
 
     @Override
@@ -154,43 +149,6 @@ public class TrashBlock extends TrashBase implements IWaterLoggable {
     }
 
     /**
-     * WaterLogging section
-     */
-    public Fluid pickupFluid(IWorld worldIn, BlockPos pos, BlockState state) {
-        if (state.get(WATERLOGGED)) {
-            worldIn.setBlockState(pos, state.with(WATERLOGGED, Boolean.valueOf(false)), 3);
-            return Fluids.WATER;
-        } else {
-            return Fluids.EMPTY;
-        }
-    }
-
-    @Override
-    public boolean canContainFluid(IBlockReader worldIn, BlockPos pos, BlockState state, Fluid fluidIn) {
-        return !state.get(WATERLOGGED) && fluidIn == Fluids.WATER;
-    }
-
-    @Override
-    public boolean receiveFluid(IWorld worldIn, BlockPos pos, BlockState state, IFluidState fluidStateIn) {
-        if (!state.get(WATERLOGGED) && fluidStateIn.getFluid() == Fluids.WATER) {
-            if (!worldIn.isRemote()) {
-                worldIn.setBlockState(pos, state.with(WATERLOGGED, Boolean.valueOf(true)), 3);
-                worldIn.getPendingFluidTicks().scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
-            }
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public IFluidState getFluidState(BlockState state) {
-        return state.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
-    }
-
-    /**
      * Power section
      */
 
@@ -239,11 +197,6 @@ public class TrashBlock extends TrashBase implements IWaterLoggable {
         return Container.calcRedstone(getTrashTile(worldIn, state, pos));
     }
 
-    @Override
-    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
-        return true;
-    }
-
     public BlockPos getTrashPos(BlockState state, BlockPos pos) {
         if(state.get(TYPE) == TrashType.TOP) {
             return pos.down();
@@ -263,7 +216,7 @@ public class TrashBlock extends TrashBase implements IWaterLoggable {
     @Override
     public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltip.add(new TranslationTextComponent("trashed.trash_tooltip").applyTextStyle(TextFormatting.GOLD));
+        tooltip.add(new TranslationTextComponent("trashed.trash_tooltip").mergeStyle(TextFormatting.GOLD));
     }
 
     @Override

@@ -20,9 +20,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class TrashedRegistry {
     private static final Item.Properties itemProperties = new Item.Properties().group(ItemGroup.MISC);
 
-    public static final DeferredRegister<Item> ITEMS = new DeferredRegister<>(ForgeRegistries.ITEMS, Trashed.MOD_ID);
-    public static final DeferredRegister<Block> BLOCKS = new DeferredRegister<>(ForgeRegistries.BLOCKS, Trashed.MOD_ID);
-    public static final DeferredRegister<TileEntityType<?>> TILES = new DeferredRegister<>(ForgeRegistries.TILE_ENTITIES, Trashed.MOD_ID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Trashed.MOD_ID);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, Trashed.MOD_ID);
+    public static final DeferredRegister<TileEntityType<?>> TILES = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, Trashed.MOD_ID);
 
     public static final RegistryObject<Block> TRASH_CAN = BLOCKS.register("trash_can", () ->  new TrashBlock(blockBuilder()));
     public static final RegistryObject<Block> FLUID_TRASH_CAN = BLOCKS.register("fluid_trash_can", () ->  new FluidTrashBlock(blockBuilder()));

@@ -37,7 +37,7 @@ public class TrashedConfig {
     }
 
     @SubscribeEvent
-    public static void onFileChange(final ModConfig.ConfigReloading configEvent) {
+    public static void onFileChange(final ModConfig.Reloading configEvent) {
         Trashed.LOGGER.fatal("Trashed config just got changed on the file system!");
     }
 }

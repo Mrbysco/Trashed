@@ -1,6 +1,5 @@
 package com.mrbysco.trashed.tile;
 
-import com.mrbysco.trashed.block.TrashBlock;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;

@@ -6,6 +6,7 @@ import com.mrbysco.trashed.block.TrashType;
 import com.mrbysco.trashed.config.TrashedConfig;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
@@ -36,7 +37,7 @@ import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 public class TrashTile extends LockableLootTileEntity implements ITickableTileEntity {
-    private NonNullList<ItemStack> trashContents = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
+    private NonNullList<ItemStack> trashContents = NonNullList.withSize(27, ItemStack.EMPTY);
     private int deletionCooldown = -1;
     private long tickedGameTime;
 
@@ -78,7 +79,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     @Override
     public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
-        if(!this.world.getBlockState(this.pos).get(TrashBlock.ENABLED)) {
+        if(world != null && !this.world.getBlockState(this.pos).get(TrashBlock.ENABLED)) {
             return super.getCapability(cap, side);
         } else if (!this.removed && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             if (this.trashHandler == null) {
@@ -126,7 +127,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
             this.tickedGameTime = this.world.getGameTime();
             if (!this.isOnDeletionCooldown()) {
                 this.setDeletionCooldown(0);
-                this.updateTrash(() -> removeItem());
+                this.updateTrash(this::removeItem);
             }
         }
     }
@@ -149,84 +150,69 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     public void onEntityCollision(Entity entity) {
         if (entity instanceof ItemEntity) {
             BlockPos blockpos = this.getPos();
-            if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset((double)(-blockpos.getX()), (double)(-blockpos.getY()), (double)(-blockpos.getZ()))), this.getCollectionArea(), IBooleanFunction.AND)) {
+            if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getCollectionArea(), IBooleanFunction.AND)) {
                 this.updatePickupTrash(() -> captureItem(this, (ItemEntity)entity));
             }
         } else if(entity instanceof LivingEntity) {
             BlockPos blockpos = this.getPos();
-            if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset((double)(-blockpos.getX()), (double)(-blockpos.getY()), (double)(-blockpos.getZ()))), this.getEntityCollectionArea(), IBooleanFunction.AND)) {
-                this.updateHurtEntity(() -> hurtEntity(this, (LivingEntity)entity));
+            if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getEntityCollectionArea(), IBooleanFunction.AND)) {
+                this.updateHurtEntity(() -> hurtEntity((LivingEntity)entity));
             }
         }
     }
 
-    private boolean updateTrash(Supplier<Boolean> p_200109_1_) {
+    private void updateTrash(Supplier<Boolean> p_200109_1_) {
         if (this.world != null && !this.world.isRemote) {
             if (!this.isOnDeletionCooldown() && this.getBlockState().get(TrashBlock.ENABLED)) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
-                    flag |= p_200109_1_.get();
+                    flag = p_200109_1_.get();
                 }
 
                 if (flag) {
                     this.setDeletionCooldown(8);
                     this.markDirty();
-                    return true;
                 }
             }
-
-            return false;
-        } else {
-            return false;
         }
     }
 
-    private boolean updatePickupTrash(Supplier<Boolean> p_200109_1_) {
+    private void updatePickupTrash(Supplier<Boolean> p_200109_1_) {
         if (this.world != null && !this.world.isRemote) {
             if (!this.isFull() && this.getBlockState().get(TrashBlock.ENABLED)) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
-                    flag |= p_200109_1_.get();
+                    flag = p_200109_1_.get();
                 }
 
                 if (flag) {
                     this.setDeletionCooldown(8);
                     this.markDirty();
-                    return true;
                 }
             }
-
-            return false;
-        } else {
-            return false;
         }
     }
 
-    private boolean updateHurtEntity(Supplier<Boolean> p_200109_1_) {
+    private void updateHurtEntity(Supplier<Boolean> p_200109_1_) {
         if (this.world != null && !this.world.isRemote) {
             if (!this.isFull() && this.getBlockState().get(TrashBlock.ENABLED) && this.getBlockState().get(TrashBlock.TYPE) == TrashType.BOTTOM) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
-                    flag |= p_200109_1_.get();
+                    flag = p_200109_1_.get();
                 }
 
                 if (flag) {
                     this.setDeletionCooldown(8);
                     this.markDirty();
-                    return true;
                 }
             }
-
-            return false;
-        } else {
-            return false;
         }
     }
 
-    public static boolean hurtEntity(IInventory inv, LivingEntity livingEnt) {
+    public static boolean hurtEntity(LivingEntity livingEnt) {
         return livingEnt.attackEntityFrom(Trashed.trashDamage, 1.0F);
     }
 
@@ -323,8 +309,9 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         }
     }
 
-    public void read(CompoundNBT compound) {
-        super.read(compound);
+    @Override
+    public void read(BlockState state, CompoundNBT compound) {
+        super.read(state, compound);
         this.trashContents = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
         if (!this.checkLootAndRead(compound)) {
             ItemStackHelper.loadAllItems(compound, this.trashContents);
@@ -357,12 +344,14 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     @Override
     public void openInventory(PlayerEntity player) {
-        world.playSound(player, this.getPos(), SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
+        if(world != null) {
+            world.playSound(player, this.getPos(), SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
+        }
         super.openInventory(player);
     }
 
     public VoxelShape getCollectionArea() {
-        if(this.world.getBlockState(this.pos).get(TrashBlock.TYPE) == TrashType.BOTTOM) {
+        if(world != null && this.world.getBlockState(this.pos).get(TrashBlock.TYPE) == TrashType.BOTTOM) {
             return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 48.0D, 13.5D);
         } else {
             return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
@@ -371,10 +360,6 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     public VoxelShape getEntityCollectionArea() {
         return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
-    }
-
-    public long getLastUpdateTime() {
-        return this.tickedGameTime;
     }
 
     @Override

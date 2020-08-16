@@ -1,4 +1,4 @@
-package com.mrbysco.trashed.init;
+package com.mrbysco.trashed.generator;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
@@ -7,13 +7,13 @@ import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.LootTableProvider;
 import net.minecraft.data.loot.BlockLootTables;
+import net.minecraft.loot.LootParameterSet;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.LootTable.Builder;
+import net.minecraft.loot.LootTableManager;
+import net.minecraft.loot.ValidationTracker;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.storage.loot.LootParameterSet;
-import net.minecraft.world.storage.loot.LootParameterSets;
-import net.minecraft.world.storage.loot.LootTable;
-import net.minecraft.world.storage.loot.LootTable.Builder;
-import net.minecraft.world.storage.loot.LootTableManager;
-import net.minecraft.world.storage.loot.ValidationResults;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ExistingFileHelper;
@@ -22,8 +22,7 @@ import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
 import java.util.List;
@@ -32,10 +31,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.mrbysco.trashed.init.TrashedRegistry.*;
+import static com.mrbysco.trashed.init.TrashedRegistry.BLOCKS;
+import static com.mrbysco.trashed.init.TrashedRegistry.ENERGY_TRASH_CAN;
+import static com.mrbysco.trashed.init.TrashedRegistry.FLUID_TRASH_CAN;
+import static com.mrbysco.trashed.init.TrashedRegistry.TRASH_CAN;
 
-@EventBusSubscriber(modid = Trashed.MOD_ID, bus = Bus.MOD)
-public class TrashedDataGen {
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+public class TrashedCreator {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
@@ -64,8 +66,8 @@ public class TrashedDataGen {
         }
 
         @Override
-        protected void validate(Map<ResourceLocation, LootTable> map, ValidationResults validationresults) {
-            map.forEach((name, table) -> LootTableManager.func_215302_a(validationresults, name, table, map::get));
+        protected void validate(Map<ResourceLocation, LootTable> map, ValidationTracker validationtracker) {
+            map.forEach((name, table) -> LootTableManager.func_227508_a_(validationtracker, name, table));
         }
 
         private class Blocks extends BlockLootTables {
@@ -73,11 +75,12 @@ public class TrashedDataGen {
             protected void addTables() {
                 this.registerDropSelfLootTable(TRASH_CAN.get());
                 this.registerDropSelfLootTable(FLUID_TRASH_CAN.get());
+                this.registerDropSelfLootTable(ENERGY_TRASH_CAN.get());
             }
 
             @Override
             protected Iterable<Block> getKnownBlocks() {
-                return (Iterable<Block>)BLOCKS.getEntries().stream().map(RegistryObject::get)::iterator;
+                return (Iterable<Block>) BLOCKS.getEntries().stream().map(RegistryObject::get)::iterator;
             }
         }
     }
@@ -131,15 +134,15 @@ public class TrashedDataGen {
         }
 
         private void makeTrash(Block block, ResourceLocation texture) {
-            ModelFile model = getBuilder(block.getRegistryName().getPath())
-                    .parent(getExistingFile(modLoc("block/trash_can")))
+            ModelFile model = models().getBuilder(block.getRegistryName().getPath())
+                    .parent(models().getExistingFile(modLoc("block/trash_can")))
                     .texture("material", texture);
             getVariantBuilder(block).forAllStates(state -> ConfiguredModel.builder().modelFile(model).build());
         }
 
         private void makeTrash(Block block) {
-            ModelFile model = getBuilder(block.getRegistryName().getPath())
-                    .parent(getExistingFile(modLoc("block/trash_can")));
+            ModelFile model = models().getBuilder(block.getRegistryName().getPath())
+                    .parent(models().getExistingFile(modLoc("block/trash_can")));
             getVariantBuilder(block).forAllStates(state -> ConfiguredModel.builder().modelFile(model).build());
         }
     }

@@ -2,6 +2,7 @@ package com.mrbysco.trashed.tile;
 
 import com.mrbysco.trashed.block.FluidTrashBlock;
 import com.mrbysco.trashed.init.TrashedRegistry;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -30,15 +31,13 @@ public class FluidTrashTile extends TileEntity implements ITickableTileEntity  {
     }
 
     @Override
-    public void read(CompoundNBT tag)
-    {
-        super.read(tag);
+    public void read(BlockState state, CompoundNBT tag) {
+        super.read(state, tag);
         tank.readFromNBT(tag);
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT tag)
-    {
+    public CompoundNBT write(CompoundNBT tag) {
         tag = super.write(tag);
         tank.writeToNBT(tag);
         return tag;
@@ -48,7 +47,7 @@ public class FluidTrashTile extends TileEntity implements ITickableTileEntity  {
     @Nonnull
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
     {
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && world.getBlockState(pos).get(FluidTrashBlock.ENABLED))
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && world != null && world.getBlockState(pos).get(FluidTrashBlock.ENABLED))
             return holder.cast();
 
         return super.getCapability(capability, facing);
