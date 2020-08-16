@@ -52,12 +52,12 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     }
 
     @Override
-    protected NonNullList<ItemStack> getItems() {
+    public NonNullList<ItemStack> getItems() {
         return this.trashContents;
     }
 
     @Override
-    protected void setItems(NonNullList<ItemStack> nonNullList) {
+    public void setItems(NonNullList<ItemStack> nonNullList) {
         this.trashContents = nonNullList;
     }
 
@@ -317,7 +317,8 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
             ItemStackHelper.loadAllItems(compound, this.trashContents);
         }
 
-        this.deletionCooldown = compound.getInt("DeletionCooldown");
+        if(compound.contains("DeletionCooldown"))
+            this.deletionCooldown = compound.getInt("DeletionCooldown");
     }
 
     public CompoundNBT write(CompoundNBT compound) {

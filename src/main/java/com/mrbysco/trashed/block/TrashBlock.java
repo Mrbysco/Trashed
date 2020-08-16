@@ -1,6 +1,7 @@
 package com.mrbysco.trashed.block;
 
 import com.mrbysco.trashed.block.base.TrashBase;
+import com.mrbysco.trashed.init.TrashedRegistry;
 import com.mrbysco.trashed.tile.TrashSlaveTile;
 import com.mrbysco.trashed.tile.TrashTile;
 import net.minecraft.block.Block;
@@ -87,11 +88,15 @@ public class TrashBlock extends TrashBase implements IWaterLoggable {
     @Override
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult result) {
         if (!worldIn.isRemote) {
-            TileEntity tile = getTrashTile(worldIn, state, pos);
-            if (tile instanceof TrashTile) {
-                NetworkHooks.openGui((ServerPlayerEntity) player, (TrashTile) tile, pos);
+            if(player.getHeldItem(hand).getItem() == TrashedRegistry.TRASH_CAN_ITEM.get() && result.getFace().equals(Direction.UP)) {
+                return ActionResultType.FAIL;
+            } else {
+                TileEntity tile = getTrashTile(worldIn, state, pos);
+                if (tile instanceof TrashTile) {
+                    NetworkHooks.openGui((ServerPlayerEntity) player, (TrashTile) tile, pos);
+                }
+                return ActionResultType.SUCCESS;
             }
-
         }
         return ActionResultType.SUCCESS;
     }
@@ -113,17 +118,29 @@ public class TrashBlock extends TrashBase implements IWaterLoggable {
 
     @Override
     public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (state.getBlock() != newState.getBlock()) {
+        if (!worldIn.isRemote && state.getBlock() != newState.getBlock()) {
+            BlockPos tePos = pos;
             if(state.get(TYPE) == TrashType.BOTTOM) {
-                worldIn.destroyBlock(pos.up(), true);
-            } else if(state.get(TYPE) == TrashType.TOP) {
+                worldIn.removeTileEntity(pos.up());
+                worldIn.setBlockState(pos.up(), worldIn.getBlockState(pos.up()).with(TYPE, TrashType.SINGLE));
+                TileEntity tile = getTrashTile(worldIn, state, pos);
+                TileEntity tile2 = getTrashTile(worldIn, state, pos.up());
+                if (tile != null && tile instanceof TrashTile && tile2 != null && tile2 instanceof TrashTile) {
+                    TrashTile oldTE = (TrashTile)tile;
+                    TrashTile newTE = (TrashTile)tile2;
+                    newTE.setItems(oldTE.getItems());
+                }
+                tePos = pos.up();
+            } else if(state.get(TYPE) == TrashType.TOP && !worldIn.isAirBlock(pos.down())) {
                 worldIn.setBlockState(pos.down(), worldIn.getBlockState(pos.down()).with(TYPE, TrashType.SINGLE));
             }
 
-            TileEntity tile = getTrashTile(worldIn, state, pos);
-            if (tile instanceof TrashTile) {
-                InventoryHelper.dropInventoryItems(worldIn, pos, (TrashTile)tile);
-                worldIn.updateComparatorOutputLevel(getTrashPos(state, pos), this);
+            if(state.get(TYPE) == TrashType.SINGLE) {
+                TileEntity tile = getTrashTile(worldIn, state, tePos);
+                if (tile != null && tile instanceof TrashTile) {
+                    InventoryHelper.dropInventoryItems(worldIn, tePos, (TrashTile)tile);
+                    worldIn.updateComparatorOutputLevel(getTrashPos(state, tePos), this);
+                }
             }
 
             super.onReplaced(state, worldIn, pos, newState, isMoving);
@@ -143,7 +160,7 @@ public class TrashBlock extends TrashBase implements IWaterLoggable {
     @Override
     public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entityIn) {
         TileEntity tileentity = getTrashTile(worldIn, state, pos);
-        if (tileentity instanceof TrashTile) {
+        if (tileentity != null && tileentity instanceof TrashTile) {
             ((TrashTile)tileentity).onEntityCollision(entityIn);
         }
     }
@@ -206,11 +223,14 @@ public class TrashBlock extends TrashBase implements IWaterLoggable {
     }
 
     public TileEntity getTrashTile(World worldIn, BlockState state, BlockPos pos) {
-        if(state.get(TYPE) == TrashType.TOP) {
-            return worldIn.getTileEntity(pos.down());
-        } else {
-            return worldIn.getTileEntity(pos);
+        if(state.getBlock() == this) {
+            if(state.get(TYPE) == TrashType.TOP) {
+                return worldIn.getTileEntity(pos.down());
+            } else {
+                return worldIn.getTileEntity(pos);
+            }
         }
+        return null;
     }
 
     @Override
