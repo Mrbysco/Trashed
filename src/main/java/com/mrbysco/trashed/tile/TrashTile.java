@@ -79,7 +79,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     @Override
     public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
-        if(world != null && !this.world.getBlockState(this.pos).get(TrashBlock.ENABLED)) {
+        if(world != null && getBlockState().getBlock() instanceof TrashBlock && !getBlockState().get(TrashBlock.ENABLED)) {
             return super.getCapability(cap, side);
         } else if (!this.removed && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             if (this.trashHandler == null) {
@@ -163,7 +163,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     private void updateTrash(Supplier<Boolean> p_200109_1_) {
         if (this.world != null && !this.world.isRemote) {
-            if (!this.isOnDeletionCooldown() && this.getBlockState().get(TrashBlock.ENABLED)) {
+            if (!this.isOnDeletionCooldown() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().get(TrashBlock.ENABLED)) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
@@ -180,7 +180,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     private void updatePickupTrash(Supplier<Boolean> p_200109_1_) {
         if (this.world != null && !this.world.isRemote) {
-            if (!this.isFull() && this.getBlockState().get(TrashBlock.ENABLED)) {
+            if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().get(TrashBlock.ENABLED)) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
@@ -197,7 +197,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     private void updateHurtEntity(Supplier<Boolean> p_200109_1_) {
         if (this.world != null && !this.world.isRemote) {
-            if (!this.isFull() && this.getBlockState().get(TrashBlock.ENABLED) && this.getBlockState().get(TrashBlock.TYPE) == TrashType.BOTTOM) {
+            if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().get(TrashBlock.ENABLED) && this.getBlockState().get(TrashBlock.TYPE) == TrashType.BOTTOM) {
                 boolean flag = false;
 
                 if (!this.isFull()) {

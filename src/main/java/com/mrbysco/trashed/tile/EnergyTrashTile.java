@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 
 public class EnergyTrashTile extends TileEntity implements ITickableTileEntity  {
     protected EnergyStorage storage = new EnergyStorage(1000000);
-    private final LazyOptional<IEnergyStorage> holder = LazyOptional.of(() -> storage);
+    private LazyOptional<IEnergyStorage> holder = LazyOptional.of(() -> storage);
 
     protected EnergyTrashTile(TileEntityType<?> type) {
         super(type);
@@ -31,7 +31,7 @@ public class EnergyTrashTile extends TileEntity implements ITickableTileEntity  
     @Nonnull
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
     {
-        if (capability == CapabilityEnergy.ENERGY && world != null && world.getBlockState(pos).get(EnergyTrashBlock.ENABLED))
+        if (capability == CapabilityEnergy.ENERGY && world != null && getBlockState().getBlock() instanceof EnergyTrashBlock && getBlockState().get(EnergyTrashBlock.ENABLED))
             return holder.cast();
 
         return super.getCapability(capability, facing);
@@ -48,5 +48,23 @@ public class EnergyTrashTile extends TileEntity implements ITickableTileEntity  
 
     public boolean isEmpty() {
         return storage.getEnergyStored() < 1;
+    }
+
+    @Override
+    public void updateContainingBlockInfo() {
+        super.updateContainingBlockInfo();
+        if (this.holder != null) {
+            this.holder.invalidate();
+            this.holder = null;
+        }
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+
+        if(holder != null) {
+            holder.invalidate();
+        }
     }
 }

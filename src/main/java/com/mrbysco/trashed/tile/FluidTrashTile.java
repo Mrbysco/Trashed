@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 
 public class FluidTrashTile extends TileEntity implements ITickableTileEntity  {
     protected FluidTank tank = new FluidTank(1000000);
-    private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
+    private LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
 
     protected FluidTrashTile(TileEntityType<?> type) {
         super(type);
@@ -45,9 +45,8 @@ public class FluidTrashTile extends TileEntity implements ITickableTileEntity  {
 
     @Override
     @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
-    {
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && world != null && world.getBlockState(pos).get(FluidTrashBlock.ENABLED))
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && world != null && getBlockState().getBlock() instanceof FluidTrashBlock && getBlockState().get(FluidTrashBlock.ENABLED))
             return holder.cast();
 
         return super.getCapability(capability, facing);
@@ -59,6 +58,24 @@ public class FluidTrashTile extends TileEntity implements ITickableTileEntity  {
             if(!this.tank.isEmpty()) {
                 this.tank.drain(this.tank.getFluidAmount(), FluidAction.EXECUTE);
             }
+        }
+    }
+
+    @Override
+    public void updateContainingBlockInfo() {
+        super.updateContainingBlockInfo();
+        if (this.holder != null) {
+            this.holder.invalidate();
+            this.holder = null;
+        }
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+
+        if(holder != null) {
+            holder.invalidate();
         }
     }
 }
