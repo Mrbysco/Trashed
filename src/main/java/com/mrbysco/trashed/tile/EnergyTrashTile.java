@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 
 public class EnergyTrashTile extends TileEntity implements ITickableTileEntity  {
     protected EnergyStorage storage = new EnergyStorage(1000000);
-    private final LazyOptional<IEnergyStorage> holder = LazyOptional.of(() -> storage);
+    private LazyOptional<IEnergyStorage> holder = LazyOptional.of(() -> storage);
 
     protected EnergyTrashTile(TileEntityType<?> type) {
         super(type);
@@ -48,5 +48,23 @@ public class EnergyTrashTile extends TileEntity implements ITickableTileEntity  
 
     public boolean isEmpty() {
         return storage.getEnergyStored() < 1;
+    }
+
+    @Override
+    public void updateContainingBlockInfo() {
+        super.updateContainingBlockInfo();
+        if (this.holder != null) {
+            this.holder.invalidate();
+            this.holder = null;
+        }
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+
+        if(holder != null) {
+            holder.invalidate();
+        }
     }
 }

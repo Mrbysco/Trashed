@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 
 public class FluidTrashTile extends TileEntity implements ITickableTileEntity  {
     protected FluidTank tank = new FluidTank(1000000);
-    private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
+    private LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
 
     protected FluidTrashTile(TileEntityType<?> type) {
         super(type);
@@ -58,6 +58,24 @@ public class FluidTrashTile extends TileEntity implements ITickableTileEntity  {
             if(!this.tank.isEmpty()) {
                 this.tank.drain(this.tank.getFluidAmount(), FluidAction.EXECUTE);
             }
+        }
+    }
+
+    @Override
+    public void updateContainingBlockInfo() {
+        super.updateContainingBlockInfo();
+        if (this.holder != null) {
+            this.holder.invalidate();
+            this.holder = null;
+        }
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+
+        if(holder != null) {
+            holder.invalidate();
         }
     }
 }
