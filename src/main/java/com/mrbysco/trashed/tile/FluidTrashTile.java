@@ -45,9 +45,8 @@ public class FluidTrashTile extends TileEntity implements ITickableTileEntity  {
 
     @Override
     @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
-    {
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && world != null && world.getBlockState(pos).get(FluidTrashBlock.ENABLED))
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && world != null && getBlockState().getBlock() instanceof FluidTrashBlock && getBlockState().get(FluidTrashBlock.ENABLED))
             return holder.cast();
 
         return super.getCapability(capability, facing);
