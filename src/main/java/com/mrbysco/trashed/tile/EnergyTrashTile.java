@@ -29,10 +29,12 @@ public class EnergyTrashTile extends TileEntity implements ITickableTileEntity  
 
     @Override
     @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
-    {
-        if (capability == CapabilityEnergy.ENERGY && world != null && getBlockState().getBlock() instanceof EnergyTrashBlock && getBlockState().get(EnergyTrashBlock.ENABLED))
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
+        if (capability == CapabilityEnergy.ENERGY && world != null && getBlockState().getBlock() instanceof EnergyTrashBlock && getBlockState().get(EnergyTrashBlock.ENABLED)) {
+            if (this.holder == null)
+                this.holder = LazyOptional.of(() -> storage);
             return holder.cast();
+        }
 
         return super.getCapability(capability, facing);
     }
