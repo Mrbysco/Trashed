@@ -2,7 +2,7 @@ package com.mrbysco.trashed;
 
 import com.mrbysco.trashed.config.TrashedConfig;
 import com.mrbysco.trashed.init.TrashedRegistry;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -16,7 +16,7 @@ public class Trashed {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "trashed";
 
-    public static final DamageSource trashDamage = new DamageSource("trashed").setMagicDamage().setDamageBypassesArmor();
+    public static final DamageSource trashDamage = new DamageSource("trashed").setMagic().bypassArmor();
 
     public Trashed() {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -25,6 +25,6 @@ public class Trashed {
 
         TrashedRegistry.ITEMS.register(eventBus);
         TrashedRegistry.BLOCKS.register(eventBus);
-        TrashedRegistry.TILES.register(eventBus);
+        TrashedRegistry.BLOCK_ENTITIES.register(eventBus);
     }
 }

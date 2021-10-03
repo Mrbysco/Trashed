@@ -1,8 +1,8 @@
 package com.mrbysco.trashed.block;
 
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.StringRepresentable;
 
-public enum TrashType implements IStringSerializable {
+public enum TrashType implements StringRepresentable {
     SINGLE("single", 0),
     BOTTOM("bottom", 2),
     TOP("top", 1);
@@ -16,7 +16,7 @@ public enum TrashType implements IStringSerializable {
         this.opposite = id;
     }
 
-    public String getString() {
+    public String getSerializedName() {
         return this.name;
     }
 

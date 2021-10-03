@@ -1,39 +1,42 @@
 package com.mrbysco.trashed.block;
 
 import com.mrbysco.trashed.block.base.TrashBase;
-import com.mrbysco.trashed.tile.FluidTrashTile;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.IWaterLoggable;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import com.mrbysco.trashed.init.TrashedRegistry;
+import com.mrbysco.trashed.tile.FluidTrashBlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.fluids.FluidUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class FluidTrashBlock extends TrashBase implements IWaterLoggable {
+public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 
     public FluidTrashBlock(Properties properties) {
         super(properties);
-        this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH).with(ENABLED, true).with(WATERLOGGED, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ENABLED, true).setValue(WATERLOGGED, false));
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-        if(state.get(ENABLED)) {
+    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
+        if(state.getValue(ENABLED)) {
             return SINGLE_SHAPE;
         } else {
             return SINGLE_DISABLED_SHAPE;
@@ -41,33 +44,22 @@ public class FluidTrashBlock extends TrashBase implements IWaterLoggable {
     }
 
     @Override
-    public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult result) {
-        if (!worldIn.isRemote) {
-            FluidUtil.interactWithFluidHandler(player, hand, worldIn, pos, result.getFace());
+    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
+        if (!worldIn.isClientSide) {
+            FluidUtil.interactWithFluidHandler(player, hand, worldIn, pos, result.getDirection());
         }
-        return ActionResultType.SUCCESS;
+        return super.use(state, worldIn, pos, player, hand, result);
     }
 
     @Override
-    public boolean hasTileEntity(BlockState state) {
-        return true;
-    }
-
-    @Nullable
-    @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new FluidTrashTile();
-    }
-
-    @Override
-    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         if (state.getBlock() != newState.getBlock()) {
-            TileEntity tileentity = worldIn.getTileEntity(pos);
-            if (tileentity instanceof FluidTrashTile) {
-                worldIn.updateComparatorOutputLevel(pos, this);
+            BlockEntity tileentity = worldIn.getBlockEntity(pos);
+            if (tileentity instanceof FluidTrashBlockEntity) {
+                worldIn.updateNeighbourForOutputSignal(pos, this);
             }
 
-            super.onReplaced(state, worldIn, pos, newState, isMoving);
+            super.onRemove(state, worldIn, pos, newState, isMoving);
         }
     }
 
@@ -76,26 +68,42 @@ public class FluidTrashBlock extends TrashBase implements IWaterLoggable {
      */
 
     @Override
-    public void onBlockAdded(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
+    public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
         if (oldState.getBlock() != state.getBlock()) {
             this.updateState(worldIn, pos, state);
         }
     }
 
-    private void updateState(World worldIn, BlockPos pos, BlockState state) {
-        boolean flag = !worldIn.isBlockPowered(pos);
-        if (flag != state.get(ENABLED)) {
-            worldIn.setBlockState(pos, state.with(ENABLED, Boolean.valueOf(flag)));
+    private void updateState(Level worldIn, BlockPos pos, BlockState state) {
+        boolean flag = !worldIn.hasNeighborSignal(pos);
+        if (flag != state.getValue(ENABLED)) {
+            worldIn.setBlockAndUpdate(pos, state.setValue(ENABLED, Boolean.valueOf(flag)));
         }
     }
 
     @Override
-    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         this.updateState(worldIn, pos, state);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        super.addInformation(stack, worldIn, tooltip, flagIn);
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
+        super.appendHoverText(stack, worldIn, tooltip, flagIn);
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new FluidTrashBlockEntity(pos, state);
+    }
+
+    @Nullable
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+        return createTrashTicker(level, blockEntityType, TrashedRegistry.FLUID_TRASH_TILE.get());
+    }
+
+    @Nullable
+    protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> p_151989_, BlockEntityType<? extends FluidTrashBlockEntity> p_151990_) {
+        return level.isClientSide ? null : createTickerHelper(p_151989_, p_151990_, FluidTrashBlockEntity::serverTick);
     }
 }

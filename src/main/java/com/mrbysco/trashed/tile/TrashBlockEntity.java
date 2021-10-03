@@ -5,50 +5,50 @@ import com.mrbysco.trashed.block.TrashBlock;
 import com.mrbysco.trashed.block.TrashType;
 import com.mrbysco.trashed.config.TrashedConfig;
 import com.mrbysco.trashed.init.TrashedRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.inventory.container.ChestContainer;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.LockableLootTileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.IBooleanFunction;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-public class TrashTile extends LockableLootTileEntity implements ITickableTileEntity {
+public class TrashBlockEntity extends RandomizableContainerBlockEntity {
     private NonNullList<ItemStack> trashContents = NonNullList.withSize(27, ItemStack.EMPTY);
     private int deletionCooldown = -1;
     private long tickedGameTime;
 
     private net.minecraftforge.common.util.LazyOptional<net.minecraftforge.items.IItemHandlerModifiable> trashHandler;
 
-    protected TrashTile(TileEntityType<?> type) {
-        super(type);
+    protected TrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
+        super(entityType, pos, state);
     }
 
-    public TrashTile() {
-        this(TrashedRegistry.TRASH_TILE.get());
+    public TrashBlockEntity(BlockPos pos, BlockState state) {
+        this(TrashedRegistry.TRASH_TILE.get(), pos, state);
     }
 
     @Override
@@ -62,26 +62,26 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     }
 
     @Override
-    protected ITextComponent getDefaultName() {
-        return new TranslationTextComponent("trashed.container.trashcan");
+    protected Component getDefaultName() {
+        return new TranslatableComponent("trashed.container.trashcan");
     }
 
     @Override
-    protected Container createMenu(int id, PlayerInventory player) {
-        return ChestContainer.createGeneric9X3(id, player, this);
+    protected AbstractContainerMenu createMenu(int id, Inventory player) {
+        return ChestMenu.threeRows(id, player, this);
     }
 
     @Nullable
     @Override
-    public Container createMenu(int id, PlayerInventory playerInv, PlayerEntity player) {
-        return ChestContainer.createGeneric9X3(id, playerInv, this);
+    public AbstractContainerMenu createMenu(int id, Inventory playerInv, Player player) {
+        return ChestMenu.threeRows(id, playerInv, this);
     }
 
     @Override
     public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
-        if(world != null && getBlockState().getBlock() instanceof TrashBlock && !getBlockState().get(TrashBlock.ENABLED)) {
+        if(level != null && getBlockState().getBlock() instanceof TrashBlock && !getBlockState().getValue(TrashBlock.ENABLED)) {
             return super.getCapability(cap, side);
-        } else if (!this.removed && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+        } else if (!this.remove && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             if (this.trashHandler == null) {
                 this.trashHandler = net.minecraftforge.common.util.LazyOptional.of(this::createHandler);
             }
@@ -95,7 +95,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     }
 
     @Override
-    public int getSizeInventory() {
+    public int getContainerSize() {
         return this.trashContents.size();
     }
 
@@ -120,21 +120,20 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         return true;
     }
 
-    @Override
-    public void tick() {
-        if (this.world != null && !this.world.isRemote) {
-            --this.deletionCooldown;
-            this.tickedGameTime = this.world.getGameTime();
-            if (!this.isOnDeletionCooldown()) {
-                this.setDeletionCooldown(0);
-                this.updateTrash(this::removeItem);
+    public static void serverTick(Level level, BlockPos pos, BlockState state, TrashBlockEntity trashTile) {
+        if (level != null) {
+            --trashTile.deletionCooldown;
+            trashTile.tickedGameTime = level.getGameTime();
+            if (!trashTile.isOnDeletionCooldown()) {
+                trashTile.setDeletionCooldown(0);
+                trashTile.updateTrash(trashTile::removeItem);
             }
         }
     }
 
     private boolean removeItem() {
         if(!this.isEmpty()) {
-            for(int i = 0; i < this.getSizeInventory(); i++) {
+            for(int i = 0; i < this.getContainerSize(); i++) {
                 if(!trashContents.get(i).isEmpty()) {
                     ItemStack stack = trashContents.get(i);
                     stack.shrink(TrashedConfig.SERVER.itemTrashQuantity.get());
@@ -149,21 +148,21 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
     public void onEntityCollision(Entity entity) {
         if (entity instanceof ItemEntity) {
-            BlockPos blockpos = this.getPos();
-            if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getCollectionArea(), IBooleanFunction.AND)) {
+            BlockPos blockpos = this.getBlockPos();
+            if (Shapes.joinIsNotEmpty(Shapes.create(entity.getBoundingBox().move(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getCollectionArea(), BooleanOp.AND)) {
                 this.updatePickupTrash(() -> captureItem(this, (ItemEntity)entity));
             }
         } else if(entity instanceof LivingEntity) {
-            BlockPos blockpos = this.getPos();
-            if (VoxelShapes.compare(VoxelShapes.create(entity.getBoundingBox().offset(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getEntityCollectionArea(), IBooleanFunction.AND)) {
+            BlockPos blockpos = this.getBlockPos();
+            if (Shapes.joinIsNotEmpty(Shapes.create(entity.getBoundingBox().move(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getEntityCollectionArea(), BooleanOp.AND)) {
                 this.updateHurtEntity(() -> hurtEntity((LivingEntity)entity));
             }
         }
     }
 
     private void updateTrash(Supplier<Boolean> p_200109_1_) {
-        if (this.world != null && !this.world.isRemote) {
-            if (!this.isOnDeletionCooldown() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().get(TrashBlock.ENABLED)) {
+        if (this.level != null && !this.level.isClientSide) {
+            if (!this.isOnDeletionCooldown() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED)) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
@@ -172,15 +171,15 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
                 if (flag) {
                     this.setDeletionCooldown(8);
-                    this.markDirty();
+                    this.setChanged();
                 }
             }
         }
     }
 
     private void updatePickupTrash(Supplier<Boolean> p_200109_1_) {
-        if (this.world != null && !this.world.isRemote) {
-            if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().get(TrashBlock.ENABLED)) {
+        if (this.level != null && !this.level.isClientSide) {
+            if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED)) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
@@ -189,15 +188,15 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
                 if (flag) {
                     this.setDeletionCooldown(8);
-                    this.markDirty();
+                    this.setChanged();
                 }
             }
         }
     }
 
     private void updateHurtEntity(Supplier<Boolean> p_200109_1_) {
-        if (this.world != null && !this.world.isRemote) {
-            if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().get(TrashBlock.ENABLED) && this.getBlockState().get(TrashBlock.TYPE) == TrashType.BOTTOM) {
+        if (this.level != null && !this.level.isClientSide) {
+            if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED) && this.getBlockState().getValue(TrashBlock.TYPE) == TrashType.BOTTOM) {
                 boolean flag = false;
 
                 if (!this.isFull()) {
@@ -206,23 +205,23 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
 
                 if (flag) {
                     this.setDeletionCooldown(8);
-                    this.markDirty();
+                    this.setChanged();
                 }
             }
         }
     }
 
     public static boolean hurtEntity(LivingEntity livingEnt) {
-        return livingEnt.attackEntityFrom(Trashed.trashDamage, 1.0F);
+        return livingEnt.hurt(Trashed.trashDamage, 1.0F);
     }
 
-    public static boolean captureItem(IInventory inv, ItemEntity itemEnt) {
+    public static boolean captureItem(Container inv, ItemEntity itemEnt) {
         boolean flag = false;
         ItemStack itemstack = itemEnt.getItem().copy();
-        ItemStack itemstack1 = putStackInInventoryAllSlots((IInventory)null, inv, itemstack, (Direction)null);
+        ItemStack itemstack1 = putStackInInventoryAllSlots((Container)null, inv, itemstack, (Direction)null);
         if (itemstack1.isEmpty()) {
             flag = true;
-            itemEnt.remove();
+            itemEnt.discard();
         } else {
             itemEnt.setItem(itemstack1);
         }
@@ -230,16 +229,16 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         return flag;
     }
 
-    public static ItemStack putStackInInventoryAllSlots(@Nullable IInventory source, IInventory destination, ItemStack stack, @Nullable Direction direction) {
-        if (destination instanceof ISidedInventory && direction != null) {
-            ISidedInventory isidedinventory = (ISidedInventory)destination;
+    public static ItemStack putStackInInventoryAllSlots(@Nullable Container source, Container destination, ItemStack stack, @Nullable Direction direction) {
+        if (destination instanceof WorldlyContainer && direction != null) {
+            WorldlyContainer isidedinventory = (WorldlyContainer)destination;
             int[] aint = isidedinventory.getSlotsForFace(direction);
 
             for(int k = 0; k < aint.length && !stack.isEmpty(); ++k) {
                 stack = insertStack(source, destination, stack, aint[k], direction);
             }
         } else {
-            int i = destination.getSizeInventory();
+            int i = destination.getContainerSize();
 
             for(int j = 0; j < i && !stack.isEmpty(); ++j) {
                 stack = insertStack(source, destination, stack, j, direction);
@@ -249,13 +248,13 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
         return stack;
     }
 
-    private static ItemStack insertStack(@Nullable IInventory source, IInventory destination, ItemStack stack, int index, @Nullable Direction direction) {
-        ItemStack itemstack = destination.getStackInSlot(index);
+    private static ItemStack insertStack(@Nullable Container source, Container destination, ItemStack stack, int index, @Nullable Direction direction) {
+        ItemStack itemstack = destination.getItem(index);
         if (canInsertItemInSlot(destination, stack, index, direction)) {
             boolean flag = false;
             boolean flag1 = destination.isEmpty();
             if (itemstack.isEmpty()) {
-                destination.setInventorySlotContents(index, stack);
+                destination.setItem(index, stack);
                 stack = ItemStack.EMPTY;
                 flag = true;
             } else if (canCombine(itemstack, stack)) {
@@ -267,12 +266,12 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
             }
 
             if (flag) {
-                if (flag1 && destination instanceof TrashTile) {
-                    TrashTile TrashTile1 = (TrashTile)destination;
+                if (flag1 && destination instanceof TrashBlockEntity) {
+                    TrashBlockEntity TrashTile1 = (TrashBlockEntity)destination;
                     if (!TrashTile1.mayDelete()) {
                         int k = 0;
-                        if (source instanceof TrashTile) {
-                            TrashTile TrashTile = (TrashTile)source;
+                        if (source instanceof TrashBlockEntity) {
+                            TrashBlockEntity TrashTile = (TrashBlockEntity)source;
                             if (TrashTile1.tickedGameTime >= TrashTile.tickedGameTime) {
                                 k = 1;
                             }
@@ -282,7 +281,7 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
                     }
                 }
 
-                destination.markDirty();
+                destination.setChanged();
             }
         }
 
@@ -292,39 +291,39 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     private static boolean canCombine(ItemStack stack1, ItemStack stack2) {
         if (stack1.getItem() != stack2.getItem()) {
             return false;
-        } else if (stack1.getDamage() != stack2.getDamage()) {
+        } else if (stack1.getDamageValue() != stack2.getDamageValue()) {
             return false;
         } else if (stack1.getCount() > stack1.getMaxStackSize()) {
             return false;
         } else {
-            return ItemStack.areItemStackTagsEqual(stack1, stack2);
+            return ItemStack.tagMatches(stack1, stack2);
         }
     }
 
-    private static boolean canInsertItemInSlot(IInventory inventoryIn, ItemStack stack, int index, @Nullable Direction side) {
-        if (!inventoryIn.isItemValidForSlot(index, stack)) {
+    private static boolean canInsertItemInSlot(Container inventoryIn, ItemStack stack, int index, @Nullable Direction side) {
+        if (!inventoryIn.canPlaceItem(index, stack)) {
             return false;
         } else {
-            return !(inventoryIn instanceof ISidedInventory) || ((ISidedInventory)inventoryIn).canInsertItem(index, stack, side);
+            return !(inventoryIn instanceof WorldlyContainer) || ((WorldlyContainer)inventoryIn).canPlaceItemThroughFace(index, stack, side);
         }
     }
 
     @Override
-    public void read(BlockState state, CompoundNBT compound) {
-        super.read(state, compound);
-        this.trashContents = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
-        if (!this.checkLootAndRead(compound)) {
-            ItemStackHelper.loadAllItems(compound, this.trashContents);
+    public void load(CompoundTag compound) {
+        super.load(compound);
+        this.trashContents = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        if (!this.tryLoadLootTable(compound)) {
+            ContainerHelper.loadAllItems(compound, this.trashContents);
         }
 
         if(compound.contains("DeletionCooldown"))
             this.deletionCooldown = compound.getInt("DeletionCooldown");
     }
 
-    public CompoundNBT write(CompoundNBT compound) {
-        super.write(compound);
-        if (!this.checkLootAndWrite(compound)) {
-            ItemStackHelper.saveAllItems(compound, this.trashContents);
+    public CompoundTag save(CompoundTag compound) {
+        super.save(compound);
+        if (!this.trySaveLootTable(compound)) {
+            ContainerHelper.saveAllItems(compound, this.trashContents);
         }
 
         compound.putInt("DeletionCooldown", this.deletionCooldown);
@@ -344,38 +343,31 @@ public class TrashTile extends LockableLootTileEntity implements ITickableTileEn
     }
 
     @Override
-    public void openInventory(PlayerEntity player) {
-        if(world != null) {
-            world.playSound(player, this.getPos(), SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
+    public void startOpen(Player player) {
+        if(level != null) {
+            level.playSound(player, this.getBlockPos(), SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
-        super.openInventory(player);
+        super.startOpen(player);
     }
 
     public VoxelShape getCollectionArea() {
-        if(world != null && this.world.getBlockState(this.pos).get(TrashBlock.TYPE) == TrashType.BOTTOM) {
-            return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 48.0D, 13.5D);
+        if(level != null && this.level.getBlockState(this.worldPosition).getValue(TrashBlock.TYPE) == TrashType.BOTTOM) {
+            return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 48.0D, 13.5D);
         } else {
-            return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
+            return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
         }
     }
 
     public VoxelShape getEntityCollectionArea() {
-        return Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
+        return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
     }
 
     @Override
-    public void updateContainingBlockInfo() {
-        super.updateContainingBlockInfo();
-        if (this.trashHandler != null) {
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        if (trashHandler != null) {
             this.trashHandler.invalidate();
             this.trashHandler = null;
         }
-    }
-
-    @Override
-    public void remove() {
-        super.remove();
-        if (trashHandler != null)
-            trashHandler.invalidate();
     }
 }
