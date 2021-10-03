@@ -31,10 +31,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.mrbysco.trashed.init.TrashedRegistry.BLOCKS;
-import static com.mrbysco.trashed.init.TrashedRegistry.ENERGY_TRASH_CAN;
-import static com.mrbysco.trashed.init.TrashedRegistry.FLUID_TRASH_CAN;
-import static com.mrbysco.trashed.init.TrashedRegistry.TRASH_CAN;
+import static com.mrbysco.trashed.init.TrashedRegistry.*;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class TrashedCreator {

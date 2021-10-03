@@ -11,7 +11,7 @@ public enum TrashType implements IStringSerializable {
     private final String name;
     private final int opposite;
 
-    private TrashType(String name, int id) {
+    TrashType(String name, int id) {
         this.name = name;
         this.opposite = id;
     }

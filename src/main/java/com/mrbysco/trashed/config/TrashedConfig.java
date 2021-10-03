@@ -24,9 +24,9 @@ public class TrashedConfig {
     }
 
     public static final ForgeConfigSpec serverSpec;
-    public static final TrashedConfig.Server SERVER;
+    public static final Server SERVER;
     static {
-        final Pair<TrashedConfig.Server, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(TrashedConfig.Server::new);
+        final Pair<Server, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Server::new);
         serverSpec = specPair.getRight();
         SERVER = specPair.getLeft();
     }

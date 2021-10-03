@@ -15,6 +15,9 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.IBooleanFunction;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -22,6 +25,14 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 
 public class TrashBase extends HorizontalBlock implements IWaterLoggable {
+    protected static final VoxelShape BOTTOM_PLATE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 0.5D, 14.0D);
+    protected static final VoxelShape SINGLE_INSIDE = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 13.0D, 13.5D);
+    protected static final VoxelShape SINGLE_INSIDE_HOLLOW = Block.makeCuboidShape(2.5D, 0.0D, 2.5D, 13.5D, 12.0D, 13.5D);
+    protected static final VoxelShape SINGLE_OUTSIDE = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 13.0D, 14.0D);
+
+    protected static final VoxelShape SINGLE_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(SINGLE_OUTSIDE, SINGLE_INSIDE, IBooleanFunction.ONLY_FIRST));
+    protected static final VoxelShape SINGLE_DISABLED_SHAPE = VoxelShapes.or(BOTTOM_PLATE, VoxelShapes.combineAndSimplify(SINGLE_OUTSIDE, SINGLE_INSIDE_HOLLOW, IBooleanFunction.ONLY_FIRST));
+
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
@@ -38,32 +49,23 @@ public class TrashBase extends HorizontalBlock implements IWaterLoggable {
     /**
      * WaterLogging section
      */
-    public Fluid pickupFluid(IWorld worldIn, BlockPos pos, BlockState state) {
-        if (state.get(WATERLOGGED)) {
-            worldIn.setBlockState(pos, state.with(WATERLOGGED, Boolean.valueOf(false)), 3);
-            return Fluids.WATER;
-        } else {
-            return Fluids.EMPTY;
+    @Override
+    public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos) {
+        if (stateIn.get(WATERLOGGED)) {
+            worldIn.getPendingFluidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
         }
+
+        return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
     }
 
     @Override
     public boolean canContainFluid(IBlockReader worldIn, BlockPos pos, BlockState state, Fluid fluidIn) {
-        return !state.get(WATERLOGGED) && fluidIn == Fluids.WATER;
+        return IWaterLoggable.super.canContainFluid(worldIn, pos, state, fluidIn);
     }
 
     @Override
     public boolean receiveFluid(IWorld worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn) {
-        if (!state.get(WATERLOGGED) && fluidStateIn.getFluid() == Fluids.WATER) {
-            if (!worldIn.isRemote()) {
-                worldIn.setBlockState(pos, state.with(WATERLOGGED, Boolean.valueOf(true)), 3);
-                worldIn.getPendingFluidTicks().scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
-            }
-
-            return true;
-        } else {
-            return false;
-        }
+        return IWaterLoggable.super.receiveFluid(worldIn, pos, state, fluidStateIn);
     }
 
     @SuppressWarnings("deprecation")
