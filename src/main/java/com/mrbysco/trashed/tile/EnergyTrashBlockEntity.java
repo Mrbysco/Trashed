@@ -55,10 +55,10 @@ public class EnergyTrashBlockEntity extends BlockEntity {
         return super.getCapability(capability, facing);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, EnergyTrashBlockEntity trashTile) {
+    public static void serverTick(Level level, BlockPos pos, BlockState state, EnergyTrashBlockEntity trashBlockEntity) {
         if (level != null) {
-            if(!trashTile.isEmpty()) {
-                trashTile.storage.extractEnergy(trashTile.storage.getEnergyStored(), false);
+            if(!trashBlockEntity.isEmpty()) {
+                trashBlockEntity.storage.extractEnergy(trashBlockEntity.storage.getEnergyStored(), false);
             }
         }
     }

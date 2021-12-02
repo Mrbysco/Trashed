@@ -120,13 +120,13 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
         return true;
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, TrashBlockEntity trashTile) {
+    public static void serverTick(Level level, BlockPos pos, BlockState state, TrashBlockEntity trashBlockEntity) {
         if (level != null) {
-            --trashTile.deletionCooldown;
-            trashTile.tickedGameTime = level.getGameTime();
-            if (!trashTile.isOnDeletionCooldown()) {
-                trashTile.setDeletionCooldown(0);
-                trashTile.updateTrash(trashTile::removeItem);
+            --trashBlockEntity.deletionCooldown;
+            trashBlockEntity.tickedGameTime = level.getGameTime();
+            if (!trashBlockEntity.isOnDeletionCooldown()) {
+                trashBlockEntity.setDeletionCooldown(0);
+                trashBlockEntity.updateTrash(trashBlockEntity::removeItem);
             }
         }
     }
@@ -230,8 +230,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
     }
 
     public static ItemStack putStackInInventoryAllSlots(@Nullable Container source, Container destination, ItemStack stack, @Nullable Direction direction) {
-        if (destination instanceof WorldlyContainer && direction != null) {
-            WorldlyContainer isidedinventory = (WorldlyContainer)destination;
+        if (destination instanceof WorldlyContainer isidedinventory && direction != null) {
             int[] aint = isidedinventory.getSlotsForFace(direction);
 
             for(int k = 0; k < aint.length && !stack.isEmpty(); ++k) {
@@ -266,18 +265,16 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
             }
 
             if (flag) {
-                if (flag1 && destination instanceof TrashBlockEntity) {
-                    TrashBlockEntity TrashTile1 = (TrashBlockEntity)destination;
-                    if (!TrashTile1.mayDelete()) {
+                if (flag1 && destination instanceof TrashBlockEntity trashBlockEntity) {
+                    if (!trashBlockEntity.mayDelete()) {
                         int k = 0;
-                        if (source instanceof TrashBlockEntity) {
-                            TrashBlockEntity TrashTile = (TrashBlockEntity)source;
-                            if (TrashTile1.tickedGameTime >= TrashTile.tickedGameTime) {
+                        if (source instanceof TrashBlockEntity trashBlockEntity1) {
+                            if (trashBlockEntity.tickedGameTime >= trashBlockEntity1.tickedGameTime) {
                                 k = 1;
                             }
                         }
 
-                        TrashTile1.setDeletionCooldown(8 - k);
+                        trashBlockEntity.setDeletionCooldown(8 - k);
                     }
                 }
 

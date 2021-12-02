@@ -35,7 +35,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.fmllegacy.network.NetworkHooks;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -60,23 +60,17 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         if(state.getValue(ENABLED)) {
-            switch(state.getValue(TYPE)) {
-                default:
-                    return SINGLE_SHAPE;
-                case BOTTOM:
-                    return BOTTOM_SHAPE;
-                case TOP:
-                    return TOP_SHAPE;
-            }
+            return switch (state.getValue(TYPE)) {
+                default -> SINGLE_SHAPE;
+                case BOTTOM -> BOTTOM_SHAPE;
+                case TOP -> TOP_SHAPE;
+            };
         } else {
-            switch(state.getValue(TYPE)) {
-                default:
-                    return SINGLE_DISABLED_SHAPE;
-                case BOTTOM:
-                    return BOTTOM_DISABLED_SHAPE;
-                case TOP:
-                    return TOP_DISABLED_SHAPE;
-            }
+            return switch (state.getValue(TYPE)) {
+                default -> SINGLE_DISABLED_SHAPE;
+                case BOTTOM -> BOTTOM_DISABLED_SHAPE;
+                case TOP -> TOP_DISABLED_SHAPE;
+            };
         }
     }
 
@@ -86,7 +80,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
             if(player.getItemInHand(hand).getItem() == TrashedRegistry.TRASH_CAN_ITEM.get() && result.getDirection().equals(Direction.UP)) {
                 return InteractionResult.FAIL;
             } else {
-                BlockEntity tile = getTrashTile(worldIn, state, pos);
+                BlockEntity tile = getTrashBlockEntity(worldIn, state, pos);
                 if (tile instanceof TrashBlockEntity) {
                     NetworkHooks.openGui((ServerPlayer) player, (TrashBlockEntity) tile, pos);
                 }
@@ -103,12 +97,10 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
             if(state.getValue(TYPE) == TrashType.BOTTOM) {
                 worldIn.removeBlockEntity(pos.above());
                 worldIn.setBlockAndUpdate(pos.above(), worldIn.getBlockState(pos.above()).setValue(TYPE, TrashType.SINGLE));
-                BlockEntity tile = getTrashTile(worldIn, state, pos);
-                BlockEntity tile2 = getTrashTile(worldIn, state, pos.above());
-                if (tile != null && tile instanceof TrashBlockEntity && tile2 != null && tile2 instanceof TrashBlockEntity) {
-                    TrashBlockEntity oldTE = (TrashBlockEntity)tile;
-                    TrashBlockEntity newTE = (TrashBlockEntity)tile2;
-                    newTE.setItems(oldTE.getItems());
+                BlockEntity tile = getTrashBlockEntity(worldIn, state, pos);
+                BlockEntity tile2 = getTrashBlockEntity(worldIn, state, pos.above());
+                if (tile != null && tile instanceof TrashBlockEntity oldBE && tile2 != null && tile2 instanceof TrashBlockEntity newBE) {
+                    newBE.setItems(oldBE.getItems());
                 }
                 tePos = pos.above();
             } else if(state.getValue(TYPE) == TrashType.TOP && !worldIn.isEmptyBlock(pos.below())) {
@@ -116,7 +108,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
             }
 
             if(state.getValue(TYPE) == TrashType.SINGLE) {
-                BlockEntity tile = getTrashTile(worldIn, state, tePos);
+                BlockEntity tile = getTrashBlockEntity(worldIn, state, tePos);
                 if (tile != null && tile instanceof TrashBlockEntity) {
                     Containers.dropContents(worldIn, tePos, (TrashBlockEntity)tile);
                     worldIn.updateNeighbourForOutputSignal(getTrashPos(state, tePos), this);
@@ -130,7 +122,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
     @Override
     public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
         if (stack.hasCustomHoverName()) {
-            BlockEntity tile = getTrashTile(worldIn, state, pos);
+            BlockEntity tile = getTrashBlockEntity(worldIn, state, pos);
             if (tile instanceof TrashBlockEntity) {
                 ((TrashBlockEntity)tile).setCustomName(stack.getHoverName());
             }
@@ -139,7 +131,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 
     @Override
     public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
-        BlockEntity tileentity = getTrashTile(worldIn, state, pos);
+        BlockEntity tileentity = getTrashBlockEntity(worldIn, state, pos);
         if (tileentity != null && tileentity instanceof TrashBlockEntity) {
             ((TrashBlockEntity)tileentity).onEntityCollision(entityIn);
         }
@@ -191,7 +183,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 
     @Override
     public int getAnalogOutputSignal(BlockState state, Level worldIn, BlockPos pos) {
-        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(getTrashTile(worldIn, state, pos));
+        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(getTrashBlockEntity(worldIn, state, pos));
     }
 
     public BlockPos getTrashPos(BlockState state, BlockPos pos) {
@@ -202,7 +194,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
         }
     }
 
-    public BlockEntity getTrashTile(Level worldIn, BlockState state, BlockPos pos) {
+    public BlockEntity getTrashBlockEntity(Level worldIn, BlockState state, BlockPos pos) {
         if(state.getBlock() == this) {
             if(state.getValue(TYPE) == TrashType.TOP) {
                 return worldIn.getBlockEntity(pos.below());

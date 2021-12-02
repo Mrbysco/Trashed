@@ -56,10 +56,10 @@ public class FluidTrashBlockEntity extends BlockEntity {
         return super.getCapability(capability, facing);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, FluidTrashBlockEntity trashTile) {
+    public static void serverTick(Level level, BlockPos pos, BlockState state, FluidTrashBlockEntity trashBlockEntity) {
         if (level != null) {
-            if(!trashTile.tank.isEmpty()) {
-                trashTile.tank.drain(trashTile.tank.getFluidAmount(), FluidAction.EXECUTE);
+            if(!trashBlockEntity.tank.isEmpty()) {
+                trashBlockEntity.tank.drain(trashBlockEntity.tank.getFluidAmount(), FluidAction.EXECUTE);
             }
         }
     }
