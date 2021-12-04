@@ -38,9 +38,14 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag save(CompoundTag tag) {
-        tag = super.save(tag);
+        saveAdditional(tag);
+        return super.save(tag);
+    }
+
+    @Override
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         tag.put("storage", storage.serializeNBT());
-        return tag;
     }
 
     @Override

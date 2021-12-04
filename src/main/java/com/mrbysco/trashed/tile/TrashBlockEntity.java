@@ -317,14 +317,20 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
             this.deletionCooldown = compound.getInt("DeletionCooldown");
     }
 
-    public CompoundTag save(CompoundTag compound) {
-        super.save(compound);
-        if (!this.trySaveLootTable(compound)) {
-            ContainerHelper.saveAllItems(compound, this.trashContents);
+    @Override
+    public CompoundTag save(CompoundTag tag) {
+        saveAdditional(tag);
+        return super.save(tag);
+    }
+
+    @Override
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        if (!this.trySaveLootTable(tag)) {
+            ContainerHelper.saveAllItems(tag, this.trashContents);
         }
 
-        compound.putInt("DeletionCooldown", this.deletionCooldown);
-        return compound;
+        tag.putInt("DeletionCooldown", this.deletionCooldown);
     }
 
     public void setDeletionCooldown(int ticks) {

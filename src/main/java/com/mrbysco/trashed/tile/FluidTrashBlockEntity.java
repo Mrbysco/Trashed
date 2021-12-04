@@ -39,9 +39,14 @@ public class FluidTrashBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag save(CompoundTag tag) {
-        tag = super.save(tag);
+        saveAdditional(tag);
+        return super.save(tag);
+    }
+
+    @Override
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         tank.writeToNBT(tag);
-        return tag;
     }
 
     @Override
