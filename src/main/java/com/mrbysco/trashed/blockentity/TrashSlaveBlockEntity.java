@@ -1,4 +1,4 @@
-package com.mrbysco.trashed.tile;
+package com.mrbysco.trashed.blockentity;
 
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;

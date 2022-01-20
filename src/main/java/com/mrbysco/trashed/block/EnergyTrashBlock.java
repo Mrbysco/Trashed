@@ -1,8 +1,8 @@
 package com.mrbysco.trashed.block;
 
 import com.mrbysco.trashed.block.base.TrashBase;
+import com.mrbysco.trashed.blockentity.EnergyTrashBlockEntity;
 import com.mrbysco.trashed.init.TrashedRegistry;
-import com.mrbysco.trashed.tile.EnergyTrashBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -38,8 +38,8 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
     @Override
     public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         if (state.getBlock() != newState.getBlock()) {
-            BlockEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof EnergyTrashBlockEntity) {
+            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+            if (blockEntity instanceof EnergyTrashBlockEntity) {
                 worldIn.updateNeighbourForOutputSignal(pos, this);
             }
 

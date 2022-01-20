@@ -1,10 +1,12 @@
-package com.mrbysco.trashed.tile;
+package com.mrbysco.trashed.blockentity;
 
 import com.mrbysco.trashed.block.FluidTrashBlock;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -38,15 +40,36 @@ public class FluidTrashBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
-        saveAdditional(tag);
-        return super.save(tag);
-    }
-
-    @Override
     public void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tank.writeToNBT(tag);
+    }@Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
+        this.load(packet.getTag());
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag nbt = new CompoundTag();
+        this.saveAdditional(nbt);
+        return nbt;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        this.load(tag);
+    }
+
+    @Override
+    public CompoundTag getTileData() {
+        CompoundTag nbt = new CompoundTag();
+        this.saveAdditional(nbt);
+        return nbt;
     }
 
     @Override

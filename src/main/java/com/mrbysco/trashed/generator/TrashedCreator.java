@@ -52,8 +52,8 @@ public class TrashedCreator {
         }
 
         @Override
-        protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker) {
-            map.forEach((name, table) -> LootTables.validate(validationtracker, name, table));
+        protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationContext) {
+            map.forEach((name, table) -> LootTables.validate(validationContext, name, table));
         }
 
         private static class Blocks extends BlockLoot {

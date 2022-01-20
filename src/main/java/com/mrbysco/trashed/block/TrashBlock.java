@@ -1,9 +1,9 @@
 package com.mrbysco.trashed.block;
 
 import com.mrbysco.trashed.block.base.TrashBase;
+import com.mrbysco.trashed.blockentity.TrashBlockEntity;
+import com.mrbysco.trashed.blockentity.TrashSlaveBlockEntity;
 import com.mrbysco.trashed.init.TrashedRegistry;
-import com.mrbysco.trashed.tile.TrashBlockEntity;
-import com.mrbysco.trashed.tile.TrashSlaveBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -131,9 +131,9 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 
     @Override
     public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
-        BlockEntity tileentity = getTrashBlockEntity(worldIn, state, pos);
-        if (tileentity != null && tileentity instanceof TrashBlockEntity) {
-            ((TrashBlockEntity)tileentity).onEntityCollision(entityIn);
+        BlockEntity blockEntity = getTrashBlockEntity(worldIn, state, pos);
+        if (blockEntity != null && blockEntity instanceof TrashBlockEntity) {
+            ((TrashBlockEntity)blockEntity).onEntityCollision(entityIn);
         }
     }
 

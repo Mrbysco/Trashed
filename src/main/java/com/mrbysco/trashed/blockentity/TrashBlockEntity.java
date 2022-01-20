@@ -1,4 +1,4 @@
-package com.mrbysco.trashed.tile;
+package com.mrbysco.trashed.blockentity;
 
 import com.mrbysco.trashed.Trashed;
 import com.mrbysco.trashed.block.TrashBlock;
@@ -9,8 +9,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -230,8 +232,8 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
     }
 
     public static ItemStack putStackInInventoryAllSlots(@Nullable Container source, Container destination, ItemStack stack, @Nullable Direction direction) {
-        if (destination instanceof WorldlyContainer isidedinventory && direction != null) {
-            int[] aint = isidedinventory.getSlotsForFace(direction);
+        if (destination instanceof WorldlyContainer worldlyContainer && direction != null) {
+            int[] aint = worldlyContainer.getSlotsForFace(direction);
 
             for(int k = 0; k < aint.length && !stack.isEmpty(); ++k) {
                 stack = insertStack(source, destination, stack, aint[k], direction);
@@ -318,12 +320,6 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
-        saveAdditional(tag);
-        return super.save(tag);
-    }
-
-    @Override
     public void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         if (!this.trySaveLootTable(tag)) {
@@ -331,6 +327,35 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
         }
 
         tag.putInt("DeletionCooldown", this.deletionCooldown);
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
+        this.load(packet.getTag());
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag nbt = new CompoundTag();
+        this.saveAdditional(nbt);
+        return nbt;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        this.load(tag);
+    }
+
+    @Override
+    public CompoundTag getTileData() {
+        CompoundTag nbt = new CompoundTag();
+        this.saveAdditional(nbt);
+        return nbt;
     }
 
     public void setDeletionCooldown(int ticks) {
