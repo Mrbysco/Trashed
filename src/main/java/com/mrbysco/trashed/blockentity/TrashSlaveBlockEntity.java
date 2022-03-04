@@ -14,17 +14,17 @@ import javax.annotation.Nullable;
 
 public class TrashSlaveBlockEntity extends BlockEntity {
 
-    protected TrashSlaveBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
-        super(entityType, pos, state);
-    }
+	protected TrashSlaveBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
+		super(entityType, pos, state);
+	}
 
-    public TrashSlaveBlockEntity(BlockPos pos, BlockState state) {
-        this(TrashedRegistry.TRASH_SLAVE_TILE.get(), pos, state);
-    }
+	public TrashSlaveBlockEntity(BlockPos pos, BlockState state) {
+		this(TrashedRegistry.TRASH_SLAVE_TILE.get(), pos, state);
+	}
 
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        return this.level.getBlockEntity(this.worldPosition.below()).getCapability(cap, side);
-    }
+	@Nonnull
+	@Override
+	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+		return this.level.getBlockEntity(this.worldPosition.below()).getCapability(cap, side);
+	}
 }

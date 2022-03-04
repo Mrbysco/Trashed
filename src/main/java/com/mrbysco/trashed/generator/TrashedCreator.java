@@ -29,45 +29,45 @@ import static com.mrbysco.trashed.init.TrashedRegistry.*;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class TrashedCreator {
-    @SubscribeEvent
-    public static void gatherData(GatherDataEvent event) {
-        DataGenerator gen = event.getGenerator();
-        ExistingFileHelper helper = event.getExistingFileHelper();
+	@SubscribeEvent
+	public static void gatherData(GatherDataEvent event) {
+		DataGenerator gen = event.getGenerator();
+		ExistingFileHelper helper = event.getExistingFileHelper();
 
-        if (event.includeServer()) {
-            gen.addProvider(new Loots(gen));
-        }
-    }
+		if (event.includeServer()) {
+			gen.addProvider(new Loots(gen));
+		}
+	}
 
-    private static class Loots extends LootTableProvider {
-        public Loots(DataGenerator gen) {
-            super(gen);
-        }
+	private static class Loots extends LootTableProvider {
+		public Loots(DataGenerator gen) {
+			super(gen);
+		}
 
-        @Override
-        protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>>, LootContextParamSet>> getTables() {
-            return ImmutableList.of(
-                    Pair.of(Blocks::new, LootContextParamSets.BLOCK)
-            );
-        }
+		@Override
+		protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>>, LootContextParamSet>> getTables() {
+			return ImmutableList.of(
+					Pair.of(Blocks::new, LootContextParamSets.BLOCK)
+			);
+		}
 
-        @Override
-        protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationContext) {
-            map.forEach((name, table) -> LootTables.validate(validationContext, name, table));
-        }
+		@Override
+		protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationContext) {
+			map.forEach((name, table) -> LootTables.validate(validationContext, name, table));
+		}
 
-        private static class Blocks extends BlockLoot {
-            @Override
-            protected void addTables() {
-                this.dropSelf(TRASH_CAN.get());
-                this.dropSelf(FLUID_TRASH_CAN.get());
-                this.dropSelf(ENERGY_TRASH_CAN.get());
-            }
+		private static class Blocks extends BlockLoot {
+			@Override
+			protected void addTables() {
+				this.dropSelf(TRASH_CAN.get());
+				this.dropSelf(FLUID_TRASH_CAN.get());
+				this.dropSelf(ENERGY_TRASH_CAN.get());
+			}
 
-            @Override
-            protected Iterable<Block> getKnownBlocks() {
-                return (Iterable<Block>) BLOCKS.getEntries().stream().map(RegistryObject::get)::iterator;
-            }
-        }
-    }
+			@Override
+			protected Iterable<Block> getKnownBlocks() {
+				return (Iterable<Block>) BLOCKS.getEntries().stream().map(RegistryObject::get)::iterator;
+			}
+		}
+	}
 }

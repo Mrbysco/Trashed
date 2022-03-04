@@ -21,50 +21,50 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBlock {
-    
-    public EnergyTrashBlock(Properties properties) {
-        super(properties);
-    }
 
-    @Override
-    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
-        if(state.getValue(ENABLED)) {
-            return SINGLE_SHAPE;
-        } else {
-            return SINGLE_DISABLED_SHAPE;
-        }
-    }
+	public EnergyTrashBlock(Properties properties) {
+		super(properties);
+	}
 
-    @Override
-    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (state.getBlock() != newState.getBlock()) {
-            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
-            if (blockEntity instanceof EnergyTrashBlockEntity) {
-                worldIn.updateNeighbourForOutputSignal(pos, this);
-            }
+	@Override
+	public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
+		if (state.getValue(ENABLED)) {
+			return SINGLE_SHAPE;
+		} else {
+			return SINGLE_DISABLED_SHAPE;
+		}
+	}
 
-            super.onRemove(state, worldIn, pos, newState, isMoving);
-        }
-    }
+	@Override
+	public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+		if (state.getBlock() != newState.getBlock()) {
+			BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+			if (blockEntity instanceof EnergyTrashBlockEntity) {
+				worldIn.updateNeighbourForOutputSignal(pos, this);
+			}
 
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-        super.appendHoverText(stack, worldIn, tooltip, flagIn);
-    }
+			super.onRemove(state, worldIn, pos, newState, isMoving);
+		}
+	}
 
-    @Nullable
-    @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new EnergyTrashBlockEntity(pos, state);
-    }
+	@Override
+	public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
+		super.appendHoverText(stack, worldIn, tooltip, flagIn);
+	}
 
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTrashTicker(level, blockEntityType, TrashedRegistry.ENERGY_TRASH_TILE.get());
-    }
+	@Nullable
+	@Override
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new EnergyTrashBlockEntity(pos, state);
+	}
 
-    @Nullable
-    protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> p_151989_, BlockEntityType<? extends EnergyTrashBlockEntity> p_151990_) {
-        return level.isClientSide ? null : createTickerHelper(p_151989_, p_151990_, EnergyTrashBlockEntity::serverTick);
-    }
+	@Nullable
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+		return createTrashTicker(level, blockEntityType, TrashedRegistry.ENERGY_TRASH_TILE.get());
+	}
+
+	@Nullable
+	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> p_151989_, BlockEntityType<? extends EnergyTrashBlockEntity> p_151990_) {
+		return level.isClientSide ? null : createTickerHelper(p_151989_, p_151990_, EnergyTrashBlockEntity::serverTick);
+	}
 }

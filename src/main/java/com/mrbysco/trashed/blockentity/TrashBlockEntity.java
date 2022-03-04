@@ -39,363 +39,363 @@ import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 public class TrashBlockEntity extends RandomizableContainerBlockEntity {
-    private NonNullList<ItemStack> trashContents = NonNullList.withSize(27, ItemStack.EMPTY);
-    private int deletionCooldown = -1;
-    private long tickedGameTime;
+	private NonNullList<ItemStack> trashContents = NonNullList.withSize(27, ItemStack.EMPTY);
+	private int deletionCooldown = -1;
+	private long tickedGameTime;
 
-    private net.minecraftforge.common.util.LazyOptional<net.minecraftforge.items.IItemHandlerModifiable> trashHandler;
+	private net.minecraftforge.common.util.LazyOptional<net.minecraftforge.items.IItemHandlerModifiable> trashHandler;
 
-    protected TrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
-        super(entityType, pos, state);
-    }
+	protected TrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
+		super(entityType, pos, state);
+	}
 
-    public TrashBlockEntity(BlockPos pos, BlockState state) {
-        this(TrashedRegistry.TRASH_TILE.get(), pos, state);
-    }
+	public TrashBlockEntity(BlockPos pos, BlockState state) {
+		this(TrashedRegistry.TRASH_TILE.get(), pos, state);
+	}
 
-    @Override
-    public NonNullList<ItemStack> getItems() {
-        return this.trashContents;
-    }
+	@Override
+	public NonNullList<ItemStack> getItems() {
+		return this.trashContents;
+	}
 
-    @Override
-    public void setItems(NonNullList<ItemStack> nonNullList) {
-        this.trashContents = nonNullList;
-    }
+	@Override
+	public void setItems(NonNullList<ItemStack> nonNullList) {
+		this.trashContents = nonNullList;
+	}
 
-    @Override
-    protected Component getDefaultName() {
-        return new TranslatableComponent("trashed.container.trashcan");
-    }
+	@Override
+	protected Component getDefaultName() {
+		return new TranslatableComponent("trashed.container.trashcan");
+	}
 
-    @Override
-    protected AbstractContainerMenu createMenu(int id, Inventory player) {
-        return ChestMenu.threeRows(id, player, this);
-    }
+	@Override
+	protected AbstractContainerMenu createMenu(int id, Inventory player) {
+		return ChestMenu.threeRows(id, player, this);
+	}
 
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int id, Inventory playerInv, Player player) {
-        return ChestMenu.threeRows(id, playerInv, this);
-    }
+	@Nullable
+	@Override
+	public AbstractContainerMenu createMenu(int id, Inventory playerInv, Player player) {
+		return ChestMenu.threeRows(id, playerInv, this);
+	}
 
-    @Override
-    public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
-        if(level != null && getBlockState().getBlock() instanceof TrashBlock && !getBlockState().getValue(TrashBlock.ENABLED)) {
-            return super.getCapability(cap, side);
-        } else if (!this.remove && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            if (this.trashHandler == null) {
-                this.trashHandler = net.minecraftforge.common.util.LazyOptional.of(this::createHandler);
-            }
-            return this.trashHandler.cast();
-        }
-        return super.getCapability(cap, side);
-    }
+	@Override
+	public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
+		if (level != null && getBlockState().getBlock() instanceof TrashBlock && !getBlockState().getValue(TrashBlock.ENABLED)) {
+			return super.getCapability(cap, side);
+		} else if (!this.remove && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+			if (this.trashHandler == null) {
+				this.trashHandler = net.minecraftforge.common.util.LazyOptional.of(this::createHandler);
+			}
+			return this.trashHandler.cast();
+		}
+		return super.getCapability(cap, side);
+	}
 
-    private net.minecraftforge.items.IItemHandlerModifiable createHandler() {
-        return new net.minecraftforge.items.wrapper.InvWrapper(this);
-    }
+	private net.minecraftforge.items.IItemHandlerModifiable createHandler() {
+		return new net.minecraftforge.items.wrapper.InvWrapper(this);
+	}
 
-    @Override
-    public int getContainerSize() {
-        return this.trashContents.size();
-    }
+	@Override
+	public int getContainerSize() {
+		return this.trashContents.size();
+	}
 
-    @Override
-    public boolean isEmpty() {
-        for(ItemStack itemstack : this.trashContents) {
-            if (!itemstack.isEmpty()) {
-                return false;
-            }
-        }
+	@Override
+	public boolean isEmpty() {
+		for (ItemStack itemstack : this.trashContents) {
+			if (!itemstack.isEmpty()) {
+				return false;
+			}
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    private boolean isFull() {
-        for(ItemStack itemstack : this.trashContents) {
-            if (itemstack.isEmpty() || itemstack.getCount() != itemstack.getMaxStackSize()) {
-                return false;
-            }
-        }
+	private boolean isFull() {
+		for (ItemStack itemstack : this.trashContents) {
+			if (itemstack.isEmpty() || itemstack.getCount() != itemstack.getMaxStackSize()) {
+				return false;
+			}
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, TrashBlockEntity trashBlockEntity) {
-        if (level != null) {
-            --trashBlockEntity.deletionCooldown;
-            trashBlockEntity.tickedGameTime = level.getGameTime();
-            if (!trashBlockEntity.isOnDeletionCooldown()) {
-                trashBlockEntity.setDeletionCooldown(0);
-                trashBlockEntity.updateTrash(trashBlockEntity::removeItem);
-            }
-        }
-    }
+	public static void serverTick(Level level, BlockPos pos, BlockState state, TrashBlockEntity trashBlockEntity) {
+		if (level != null) {
+			--trashBlockEntity.deletionCooldown;
+			trashBlockEntity.tickedGameTime = level.getGameTime();
+			if (!trashBlockEntity.isOnDeletionCooldown()) {
+				trashBlockEntity.setDeletionCooldown(0);
+				trashBlockEntity.updateTrash(trashBlockEntity::removeItem);
+			}
+		}
+	}
 
-    private boolean removeItem() {
-        if(!this.isEmpty()) {
-            for(int i = 0; i < this.getContainerSize(); i++) {
-                if(!trashContents.get(i).isEmpty()) {
-                    ItemStack stack = trashContents.get(i);
-                    stack.shrink(TrashedConfig.SERVER.itemTrashQuantity.get());
-                    trashContents.set(i, stack);
-                    return true;
-                }
-            }
-            return false;
-        }
-        return false;
-    }
+	private boolean removeItem() {
+		if (!this.isEmpty()) {
+			for (int i = 0; i < this.getContainerSize(); i++) {
+				if (!trashContents.get(i).isEmpty()) {
+					ItemStack stack = trashContents.get(i);
+					stack.shrink(TrashedConfig.SERVER.itemTrashQuantity.get());
+					trashContents.set(i, stack);
+					return true;
+				}
+			}
+			return false;
+		}
+		return false;
+	}
 
-    public void onEntityCollision(Entity entity) {
-        if (entity instanceof ItemEntity) {
-            BlockPos blockpos = this.getBlockPos();
-            if (Shapes.joinIsNotEmpty(Shapes.create(entity.getBoundingBox().move(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getCollectionArea(), BooleanOp.AND)) {
-                this.updatePickupTrash(() -> captureItem(this, (ItemEntity)entity));
-            }
-        } else if(entity instanceof LivingEntity) {
-            BlockPos blockpos = this.getBlockPos();
-            if (Shapes.joinIsNotEmpty(Shapes.create(entity.getBoundingBox().move(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getEntityCollectionArea(), BooleanOp.AND)) {
-                this.updateHurtEntity(() -> hurtEntity((LivingEntity)entity));
-            }
-        }
-    }
+	public void onEntityCollision(Entity entity) {
+		if (entity instanceof ItemEntity) {
+			BlockPos blockpos = this.getBlockPos();
+			if (Shapes.joinIsNotEmpty(Shapes.create(entity.getBoundingBox().move(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getCollectionArea(), BooleanOp.AND)) {
+				this.updatePickupTrash(() -> captureItem(this, (ItemEntity) entity));
+			}
+		} else if (entity instanceof LivingEntity) {
+			BlockPos blockpos = this.getBlockPos();
+			if (Shapes.joinIsNotEmpty(Shapes.create(entity.getBoundingBox().move(-blockpos.getX(), -blockpos.getY(), -blockpos.getZ())), this.getEntityCollectionArea(), BooleanOp.AND)) {
+				this.updateHurtEntity(() -> hurtEntity((LivingEntity) entity));
+			}
+		}
+	}
 
-    private void updateTrash(Supplier<Boolean> p_200109_1_) {
-        if (this.level != null && !this.level.isClientSide) {
-            if (!this.isOnDeletionCooldown() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED)) {
-                boolean flag = false;
+	private void updateTrash(Supplier<Boolean> p_200109_1_) {
+		if (this.level != null && !this.level.isClientSide) {
+			if (!this.isOnDeletionCooldown() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED)) {
+				boolean flag = false;
 
-                if (!this.isFull()) {
-                    flag = p_200109_1_.get();
-                }
+				if (!this.isFull()) {
+					flag = p_200109_1_.get();
+				}
 
-                if (flag) {
-                    this.setDeletionCooldown(8);
-                    this.setChanged();
-                }
-            }
-        }
-    }
+				if (flag) {
+					this.setDeletionCooldown(8);
+					this.setChanged();
+				}
+			}
+		}
+	}
 
-    private void updatePickupTrash(Supplier<Boolean> p_200109_1_) {
-        if (this.level != null && !this.level.isClientSide) {
-            if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED)) {
-                boolean flag = false;
+	private void updatePickupTrash(Supplier<Boolean> p_200109_1_) {
+		if (this.level != null && !this.level.isClientSide) {
+			if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED)) {
+				boolean flag = false;
 
-                if (!this.isFull()) {
-                    flag = p_200109_1_.get();
-                }
+				if (!this.isFull()) {
+					flag = p_200109_1_.get();
+				}
 
-                if (flag) {
-                    this.setDeletionCooldown(8);
-                    this.setChanged();
-                }
-            }
-        }
-    }
+				if (flag) {
+					this.setDeletionCooldown(8);
+					this.setChanged();
+				}
+			}
+		}
+	}
 
-    private void updateHurtEntity(Supplier<Boolean> p_200109_1_) {
-        if (this.level != null && !this.level.isClientSide) {
-            if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED) && this.getBlockState().getValue(TrashBlock.TYPE) == TrashType.BOTTOM) {
-                boolean flag = false;
+	private void updateHurtEntity(Supplier<Boolean> p_200109_1_) {
+		if (this.level != null && !this.level.isClientSide) {
+			if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED) && this.getBlockState().getValue(TrashBlock.TYPE) == TrashType.BOTTOM) {
+				boolean flag = false;
 
-                if (!this.isFull()) {
-                    flag = p_200109_1_.get();
-                }
+				if (!this.isFull()) {
+					flag = p_200109_1_.get();
+				}
 
-                if (flag) {
-                    this.setDeletionCooldown(8);
-                    this.setChanged();
-                }
-            }
-        }
-    }
+				if (flag) {
+					this.setDeletionCooldown(8);
+					this.setChanged();
+				}
+			}
+		}
+	}
 
-    public static boolean hurtEntity(LivingEntity livingEnt) {
-        return livingEnt.hurt(Trashed.trashDamage, 1.0F);
-    }
+	public static boolean hurtEntity(LivingEntity livingEnt) {
+		return livingEnt.hurt(Trashed.trashDamage, 1.0F);
+	}
 
-    public static boolean captureItem(Container inv, ItemEntity itemEnt) {
-        boolean flag = false;
-        ItemStack itemstack = itemEnt.getItem().copy();
-        ItemStack itemstack1 = putStackInInventoryAllSlots((Container)null, inv, itemstack, (Direction)null);
-        if (itemstack1.isEmpty()) {
-            flag = true;
-            itemEnt.discard();
-        } else {
-            itemEnt.setItem(itemstack1);
-        }
+	public static boolean captureItem(Container inv, ItemEntity itemEnt) {
+		boolean flag = false;
+		ItemStack itemstack = itemEnt.getItem().copy();
+		ItemStack itemstack1 = putStackInInventoryAllSlots((Container) null, inv, itemstack, (Direction) null);
+		if (itemstack1.isEmpty()) {
+			flag = true;
+			itemEnt.discard();
+		} else {
+			itemEnt.setItem(itemstack1);
+		}
 
-        return flag;
-    }
+		return flag;
+	}
 
-    public static ItemStack putStackInInventoryAllSlots(@Nullable Container source, Container destination, ItemStack stack, @Nullable Direction direction) {
-        if (destination instanceof WorldlyContainer worldlyContainer && direction != null) {
-            int[] aint = worldlyContainer.getSlotsForFace(direction);
+	public static ItemStack putStackInInventoryAllSlots(@Nullable Container source, Container destination, ItemStack stack, @Nullable Direction direction) {
+		if (destination instanceof WorldlyContainer worldlyContainer && direction != null) {
+			int[] aint = worldlyContainer.getSlotsForFace(direction);
 
-            for(int k = 0; k < aint.length && !stack.isEmpty(); ++k) {
-                stack = insertStack(source, destination, stack, aint[k], direction);
-            }
-        } else {
-            int i = destination.getContainerSize();
+			for (int k = 0; k < aint.length && !stack.isEmpty(); ++k) {
+				stack = insertStack(source, destination, stack, aint[k], direction);
+			}
+		} else {
+			int i = destination.getContainerSize();
 
-            for(int j = 0; j < i && !stack.isEmpty(); ++j) {
-                stack = insertStack(source, destination, stack, j, direction);
-            }
-        }
+			for (int j = 0; j < i && !stack.isEmpty(); ++j) {
+				stack = insertStack(source, destination, stack, j, direction);
+			}
+		}
 
-        return stack;
-    }
+		return stack;
+	}
 
-    private static ItemStack insertStack(@Nullable Container source, Container destination, ItemStack stack, int index, @Nullable Direction direction) {
-        ItemStack itemstack = destination.getItem(index);
-        if (canInsertItemInSlot(destination, stack, index, direction)) {
-            boolean flag = false;
-            boolean flag1 = destination.isEmpty();
-            if (itemstack.isEmpty()) {
-                destination.setItem(index, stack);
-                stack = ItemStack.EMPTY;
-                flag = true;
-            } else if (canCombine(itemstack, stack)) {
-                int i = stack.getMaxStackSize() - itemstack.getCount();
-                int j = Math.min(stack.getCount(), i);
-                stack.shrink(j);
-                itemstack.grow(j);
-                flag = j > 0;
-            }
+	private static ItemStack insertStack(@Nullable Container source, Container destination, ItemStack stack, int index, @Nullable Direction direction) {
+		ItemStack itemstack = destination.getItem(index);
+		if (canInsertItemInSlot(destination, stack, index, direction)) {
+			boolean flag = false;
+			boolean flag1 = destination.isEmpty();
+			if (itemstack.isEmpty()) {
+				destination.setItem(index, stack);
+				stack = ItemStack.EMPTY;
+				flag = true;
+			} else if (canCombine(itemstack, stack)) {
+				int i = stack.getMaxStackSize() - itemstack.getCount();
+				int j = Math.min(stack.getCount(), i);
+				stack.shrink(j);
+				itemstack.grow(j);
+				flag = j > 0;
+			}
 
-            if (flag) {
-                if (flag1 && destination instanceof TrashBlockEntity trashBlockEntity) {
-                    if (!trashBlockEntity.mayDelete()) {
-                        int k = 0;
-                        if (source instanceof TrashBlockEntity trashBlockEntity1) {
-                            if (trashBlockEntity.tickedGameTime >= trashBlockEntity1.tickedGameTime) {
-                                k = 1;
-                            }
-                        }
+			if (flag) {
+				if (flag1 && destination instanceof TrashBlockEntity trashBlockEntity) {
+					if (!trashBlockEntity.mayDelete()) {
+						int k = 0;
+						if (source instanceof TrashBlockEntity trashBlockEntity1) {
+							if (trashBlockEntity.tickedGameTime >= trashBlockEntity1.tickedGameTime) {
+								k = 1;
+							}
+						}
 
-                        trashBlockEntity.setDeletionCooldown(8 - k);
-                    }
-                }
+						trashBlockEntity.setDeletionCooldown(8 - k);
+					}
+				}
 
-                destination.setChanged();
-            }
-        }
+				destination.setChanged();
+			}
+		}
 
-        return stack;
-    }
+		return stack;
+	}
 
-    private static boolean canCombine(ItemStack stack1, ItemStack stack2) {
-        if (stack1.getItem() != stack2.getItem()) {
-            return false;
-        } else if (stack1.getDamageValue() != stack2.getDamageValue()) {
-            return false;
-        } else if (stack1.getCount() > stack1.getMaxStackSize()) {
-            return false;
-        } else {
-            return ItemStack.tagMatches(stack1, stack2);
-        }
-    }
+	private static boolean canCombine(ItemStack stack1, ItemStack stack2) {
+		if (stack1.getItem() != stack2.getItem()) {
+			return false;
+		} else if (stack1.getDamageValue() != stack2.getDamageValue()) {
+			return false;
+		} else if (stack1.getCount() > stack1.getMaxStackSize()) {
+			return false;
+		} else {
+			return ItemStack.tagMatches(stack1, stack2);
+		}
+	}
 
-    private static boolean canInsertItemInSlot(Container inventoryIn, ItemStack stack, int index, @Nullable Direction side) {
-        if (!inventoryIn.canPlaceItem(index, stack)) {
-            return false;
-        } else {
-            return !(inventoryIn instanceof WorldlyContainer) || ((WorldlyContainer)inventoryIn).canPlaceItemThroughFace(index, stack, side);
-        }
-    }
+	private static boolean canInsertItemInSlot(Container inventoryIn, ItemStack stack, int index, @Nullable Direction side) {
+		if (!inventoryIn.canPlaceItem(index, stack)) {
+			return false;
+		} else {
+			return !(inventoryIn instanceof WorldlyContainer) || ((WorldlyContainer) inventoryIn).canPlaceItemThroughFace(index, stack, side);
+		}
+	}
 
-    @Override
-    public void load(CompoundTag compound) {
-        super.load(compound);
-        this.trashContents = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        if (!this.tryLoadLootTable(compound)) {
-            ContainerHelper.loadAllItems(compound, this.trashContents);
-        }
+	@Override
+	public void load(CompoundTag compound) {
+		super.load(compound);
+		this.trashContents = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+		if (!this.tryLoadLootTable(compound)) {
+			ContainerHelper.loadAllItems(compound, this.trashContents);
+		}
 
-        if(compound.contains("DeletionCooldown"))
-            this.deletionCooldown = compound.getInt("DeletionCooldown");
-    }
+		if (compound.contains("DeletionCooldown"))
+			this.deletionCooldown = compound.getInt("DeletionCooldown");
+	}
 
-    @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        if (!this.trySaveLootTable(tag)) {
-            ContainerHelper.saveAllItems(tag, this.trashContents);
-        }
+	@Override
+	public void saveAdditional(CompoundTag tag) {
+		super.saveAdditional(tag);
+		if (!this.trySaveLootTable(tag)) {
+			ContainerHelper.saveAllItems(tag, this.trashContents);
+		}
 
-        tag.putInt("DeletionCooldown", this.deletionCooldown);
-    }
+		tag.putInt("DeletionCooldown", this.deletionCooldown);
+	}
 
-    @Override
-    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
+	@Override
+	public ClientboundBlockEntityDataPacket getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
+	}
 
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
-        this.load(packet.getTag());
-    }
+	@Override
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
+		this.load(packet.getTag());
+	}
 
-    @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag nbt = new CompoundTag();
-        this.saveAdditional(nbt);
-        return nbt;
-    }
+	@Override
+	public CompoundTag getUpdateTag() {
+		CompoundTag nbt = new CompoundTag();
+		this.saveAdditional(nbt);
+		return nbt;
+	}
 
-    @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        this.load(tag);
-    }
+	@Override
+	public void handleUpdateTag(CompoundTag tag) {
+		this.load(tag);
+	}
 
-    @Override
-    public CompoundTag getTileData() {
-        CompoundTag nbt = new CompoundTag();
-        this.saveAdditional(nbt);
-        return nbt;
-    }
+	@Override
+	public CompoundTag getTileData() {
+		CompoundTag nbt = new CompoundTag();
+		this.saveAdditional(nbt);
+		return nbt;
+	}
 
-    public void setDeletionCooldown(int ticks) {
-        this.deletionCooldown = ticks;
-    }
+	public void setDeletionCooldown(int ticks) {
+		this.deletionCooldown = ticks;
+	}
 
-    private boolean isOnDeletionCooldown() {
-        return this.deletionCooldown > 0;
-    }
+	private boolean isOnDeletionCooldown() {
+		return this.deletionCooldown > 0;
+	}
 
-    public boolean mayDelete() {
-        return this.deletionCooldown > 8;
-    }
+	public boolean mayDelete() {
+		return this.deletionCooldown > 8;
+	}
 
-    @Override
-    public void startOpen(Player player) {
-        if(level != null) {
-            level.playSound(player, this.getBlockPos(), SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 1.0F, 1.0F);
-        }
-        super.startOpen(player);
-    }
+	@Override
+	public void startOpen(Player player) {
+		if (level != null) {
+			level.playSound(player, this.getBlockPos(), SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 1.0F, 1.0F);
+		}
+		super.startOpen(player);
+	}
 
-    public VoxelShape getCollectionArea() {
-        if(level != null && this.level.getBlockState(this.worldPosition).getValue(TrashBlock.TYPE) == TrashType.BOTTOM) {
-            return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 48.0D, 13.5D);
-        } else {
-            return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
-        }
-    }
+	public VoxelShape getCollectionArea() {
+		if (level != null && this.level.getBlockState(this.worldPosition).getValue(TrashBlock.TYPE) == TrashType.BOTTOM) {
+			return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 48.0D, 13.5D);
+		} else {
+			return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
+		}
+	}
 
-    public VoxelShape getEntityCollectionArea() {
-        return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
-    }
+	public VoxelShape getEntityCollectionArea() {
+		return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
+	}
 
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        if (trashHandler != null) {
-            this.trashHandler.invalidate();
-            this.trashHandler = null;
-        }
-    }
+	@Override
+	public void invalidateCaps() {
+		super.invalidateCaps();
+		if (trashHandler != null) {
+			this.trashHandler.invalidate();
+			this.trashHandler = null;
+		}
+	}
 }

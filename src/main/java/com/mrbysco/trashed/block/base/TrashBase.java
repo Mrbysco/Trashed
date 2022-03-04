@@ -29,106 +29,106 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.annotation.Nullable;
 
 public abstract class TrashBase extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, EntityBlock {
-    protected static final VoxelShape BOTTOM_PLATE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 0.5D, 14.0D);
-    protected static final VoxelShape SINGLE_INSIDE = Block.box(2.5D, 0.0D, 2.5D, 13.5D, 13.0D, 13.5D);
-    protected static final VoxelShape SINGLE_INSIDE_HOLLOW = Block.box(2.5D, 0.0D, 2.5D, 13.5D, 12.0D, 13.5D);
-    protected static final VoxelShape SINGLE_OUTSIDE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 13.0D, 14.0D);
+	protected static final VoxelShape BOTTOM_PLATE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 0.5D, 14.0D);
+	protected static final VoxelShape SINGLE_INSIDE = Block.box(2.5D, 0.0D, 2.5D, 13.5D, 13.0D, 13.5D);
+	protected static final VoxelShape SINGLE_INSIDE_HOLLOW = Block.box(2.5D, 0.0D, 2.5D, 13.5D, 12.0D, 13.5D);
+	protected static final VoxelShape SINGLE_OUTSIDE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 13.0D, 14.0D);
 
-    protected static final VoxelShape SINGLE_SHAPE = Shapes.or(BOTTOM_PLATE, Shapes.join(SINGLE_OUTSIDE, SINGLE_INSIDE, BooleanOp.ONLY_FIRST));
-    protected static final VoxelShape SINGLE_DISABLED_SHAPE = Shapes.or(BOTTOM_PLATE, Shapes.join(SINGLE_OUTSIDE, SINGLE_INSIDE_HOLLOW, BooleanOp.ONLY_FIRST));
+	protected static final VoxelShape SINGLE_SHAPE = Shapes.or(BOTTOM_PLATE, Shapes.join(SINGLE_OUTSIDE, SINGLE_INSIDE, BooleanOp.ONLY_FIRST));
+	protected static final VoxelShape SINGLE_DISABLED_SHAPE = Shapes.or(BOTTOM_PLATE, Shapes.join(SINGLE_OUTSIDE, SINGLE_INSIDE_HOLLOW, BooleanOp.ONLY_FIRST));
 
-    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-    public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
+	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+	public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
-    public TrashBase(Properties properties) {
-        super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ENABLED, true).setValue(WATERLOGGED, false));
-    }
+	public TrashBase(Properties properties) {
+		super(properties);
+		this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ENABLED, true).setValue(WATERLOGGED, false));
+	}
 
-    @Override
-    public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
-        return true;
-    }
+	@Override
+	public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
+		return true;
+	}
 
-    /**
-     * WaterLogging section
-     */
-    @Override
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor levelAccessor, BlockPos currentPos, BlockPos facingPos) {
-        if (stateIn.getValue(WATERLOGGED)) {
-            levelAccessor.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(levelAccessor));
-        }
+	/**
+	 * WaterLogging section
+	 */
+	@Override
+	public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor levelAccessor, BlockPos currentPos, BlockPos facingPos) {
+		if (stateIn.getValue(WATERLOGGED)) {
+			levelAccessor.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(levelAccessor));
+		}
 
-        return super.updateShape(stateIn, facing, facingState, levelAccessor, currentPos, facingPos);
-    }
+		return super.updateShape(stateIn, facing, facingState, levelAccessor, currentPos, facingPos);
+	}
 
-    @Override
-    public boolean canPlaceLiquid(BlockGetter worldIn, BlockPos pos, BlockState state, Fluid fluidIn) {
-        return SimpleWaterloggedBlock.super.canPlaceLiquid(worldIn, pos, state, fluidIn);
-    }
+	@Override
+	public boolean canPlaceLiquid(BlockGetter worldIn, BlockPos pos, BlockState state, Fluid fluidIn) {
+		return SimpleWaterloggedBlock.super.canPlaceLiquid(worldIn, pos, state, fluidIn);
+	}
 
-    @Override
-    public boolean placeLiquid(LevelAccessor worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn) {
-        return SimpleWaterloggedBlock.super.placeLiquid(worldIn, pos, state, fluidStateIn);
-    }
+	@Override
+	public boolean placeLiquid(LevelAccessor worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn) {
+		return SimpleWaterloggedBlock.super.placeLiquid(worldIn, pos, state, fluidStateIn);
+	}
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public FluidState getFluidState(BlockState state) {
-        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
-    }
+	@SuppressWarnings("deprecation")
+	@Override
+	public FluidState getFluidState(BlockState state) {
+		return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+	}
 
-    /**
-     * Rotation section
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public BlockState rotate(BlockState state, Rotation rot) {
-        return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
-    }
+	/**
+	 * Rotation section
+	 */
+	@SuppressWarnings("deprecation")
+	@Override
+	public BlockState rotate(BlockState state, Rotation rot) {
+		return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
+	}
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public BlockState mirror(BlockState state, Mirror mirrorIn) {
-        return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
-    }
+	@SuppressWarnings("deprecation")
+	@Override
+	public BlockState mirror(BlockState state, Mirror mirrorIn) {
+		return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
+	}
 
-    @Override
-    protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
-        builder.add(FACING, WATERLOGGED, ENABLED);
-    }
+	@Override
+	protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
+		builder.add(FACING, WATERLOGGED, ENABLED);
+	}
 
-    @Nullable
-    @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
-    }
+	@Nullable
+	@Override
+	public BlockState getStateForPlacement(BlockPlaceContext context) {
+		return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+	}
 
-    /**
-     * Power section
-     */
+	/**
+	 * Power section
+	 */
 
-    @Override
-    public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
-        if (oldState.getBlock() != state.getBlock()) {
-            this.updateState(worldIn, pos, state);
-        }
-    }
+	@Override
+	public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
+		if (oldState.getBlock() != state.getBlock()) {
+			this.updateState(worldIn, pos, state);
+		}
+	}
 
-    private void updateState(Level worldIn, BlockPos pos, BlockState state) {
-        boolean flag = !worldIn.hasNeighborSignal(pos);
-        if (flag != state.getValue(ENABLED)) {
-            worldIn.setBlockAndUpdate(pos, state.setValue(ENABLED, flag));
-        }
-    }
+	private void updateState(Level worldIn, BlockPos pos, BlockState state) {
+		boolean flag = !worldIn.hasNeighborSignal(pos);
+		if (flag != state.getValue(ENABLED)) {
+			worldIn.setBlockAndUpdate(pos, state.setValue(ENABLED, flag));
+		}
+	}
 
-    @Override
-    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
-        this.updateState(worldIn, pos, state);
-    }
+	@Override
+	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+		this.updateState(worldIn, pos, state);
+	}
 
-    @Nullable
-    protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> p_152133_, BlockEntityType<E> p_152134_, BlockEntityTicker<? super E> p_152135_) {
-        return p_152134_ == p_152133_ ? (BlockEntityTicker<A>)p_152135_ : null;
-    }
+	@Nullable
+	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> p_152133_, BlockEntityType<E> p_152134_, BlockEntityTicker<? super E> p_152135_) {
+		return p_152134_ == p_152133_ ? (BlockEntityTicker<A>) p_152135_ : null;
+	}
 }

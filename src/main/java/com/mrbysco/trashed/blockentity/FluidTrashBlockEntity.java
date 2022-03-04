@@ -22,82 +22,84 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class FluidTrashBlockEntity extends BlockEntity {
-    protected FluidTank tank = new FluidTank(1000000);
-    private LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
+	protected FluidTank tank = new FluidTank(1000000);
+	private LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> tank);
 
-    protected FluidTrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
-        super(entityType, pos, state);
-    }
+	protected FluidTrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
+		super(entityType, pos, state);
+	}
 
-    public FluidTrashBlockEntity(BlockPos pos, BlockState state) {
-        this(TrashedRegistry.FLUID_TRASH_TILE.get(), pos, state);
-    }
+	public FluidTrashBlockEntity(BlockPos pos, BlockState state) {
+		this(TrashedRegistry.FLUID_TRASH_TILE.get(), pos, state);
+	}
 
-    @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        tank.readFromNBT(tag);
-    }
+	@Override
+	public void load(CompoundTag tag) {
+		super.load(tag);
+		tank.readFromNBT(tag);
+	}
 
-    @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tank.writeToNBT(tag);
-    }@Override
-    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
+	@Override
+	public void saveAdditional(CompoundTag tag) {
+		super.saveAdditional(tag);
+		tank.writeToNBT(tag);
+	}
 
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
-        this.load(packet.getTag());
-    }
+	@Override
+	public ClientboundBlockEntityDataPacket getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
+	}
 
-    @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag nbt = new CompoundTag();
-        this.saveAdditional(nbt);
-        return nbt;
-    }
+	@Override
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
+		this.load(packet.getTag());
+	}
 
-    @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        this.load(tag);
-    }
+	@Override
+	public CompoundTag getUpdateTag() {
+		CompoundTag nbt = new CompoundTag();
+		this.saveAdditional(nbt);
+		return nbt;
+	}
 
-    @Override
-    public CompoundTag getTileData() {
-        CompoundTag nbt = new CompoundTag();
-        this.saveAdditional(nbt);
-        return nbt;
-    }
+	@Override
+	public void handleUpdateTag(CompoundTag tag) {
+		this.load(tag);
+	}
 
-    @Override
-    @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && level != null && getBlockState().getBlock() instanceof FluidTrashBlock && getBlockState().getValue(FluidTrashBlock.ENABLED)) {
-            if (this.holder == null)
-                this.holder = LazyOptional.of(() -> tank);
-            return holder.cast();
-        }
+	@Override
+	public CompoundTag getTileData() {
+		CompoundTag nbt = new CompoundTag();
+		this.saveAdditional(nbt);
+		return nbt;
+	}
 
-        return super.getCapability(capability, facing);
-    }
+	@Override
+	@Nonnull
+	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
+		if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && level != null && getBlockState().getBlock() instanceof FluidTrashBlock && getBlockState().getValue(FluidTrashBlock.ENABLED)) {
+			if (this.holder == null)
+				this.holder = LazyOptional.of(() -> tank);
+			return holder.cast();
+		}
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, FluidTrashBlockEntity trashBlockEntity) {
-        if (level != null) {
-            if(!trashBlockEntity.tank.isEmpty()) {
-                trashBlockEntity.tank.drain(trashBlockEntity.tank.getFluidAmount(), FluidAction.EXECUTE);
-            }
-        }
-    }
+		return super.getCapability(capability, facing);
+	}
 
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        if (holder != null) {
-            this.holder.invalidate();
-            this.holder = null;
-        }
-    }
+	public static void serverTick(Level level, BlockPos pos, BlockState state, FluidTrashBlockEntity trashBlockEntity) {
+		if (level != null) {
+			if (!trashBlockEntity.tank.isEmpty()) {
+				trashBlockEntity.tank.drain(trashBlockEntity.tank.getFluidAmount(), FluidAction.EXECUTE);
+			}
+		}
+	}
+
+	@Override
+	public void invalidateCaps() {
+		super.invalidateCaps();
+		if (holder != null) {
+			this.holder.invalidate();
+			this.holder = null;
+		}
+	}
 }
