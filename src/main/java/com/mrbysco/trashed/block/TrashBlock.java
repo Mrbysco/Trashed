@@ -8,7 +8,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -82,7 +81,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 			} else {
 				BlockEntity tile = getTrashBlockEntity(worldIn, state, pos);
 				if (tile instanceof TrashBlockEntity) {
-					NetworkHooks.openGui((ServerPlayer) player, (TrashBlockEntity) tile, pos);
+					NetworkHooks.openScreen((ServerPlayer) player, (TrashBlockEntity) tile, pos);
 				}
 				return InteractionResult.SUCCESS;
 			}
@@ -99,7 +98,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 				worldIn.setBlockAndUpdate(pos.above(), worldIn.getBlockState(pos.above()).setValue(TYPE, TrashType.SINGLE));
 				BlockEntity tile = getTrashBlockEntity(worldIn, state, pos);
 				BlockEntity tile2 = getTrashBlockEntity(worldIn, state, pos.above());
-				if (tile != null && tile instanceof TrashBlockEntity oldBE && tile2 != null && tile2 instanceof TrashBlockEntity newBE) {
+				if (tile instanceof TrashBlockEntity oldBE && tile2 instanceof TrashBlockEntity newBE) {
 					newBE.setItems(oldBE.getItems());
 				}
 				tePos = pos.above();
@@ -109,7 +108,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 
 			if (state.getValue(TYPE) == TrashType.SINGLE) {
 				BlockEntity tile = getTrashBlockEntity(worldIn, state, tePos);
-				if (tile != null && tile instanceof TrashBlockEntity) {
+				if (tile instanceof TrashBlockEntity) {
 					Containers.dropContents(worldIn, tePos, (TrashBlockEntity) tile);
 					worldIn.updateNeighbourForOutputSignal(getTrashPos(state, tePos), this);
 				}
@@ -132,7 +131,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	@Override
 	public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
 		BlockEntity blockEntity = getTrashBlockEntity(worldIn, state, pos);
-		if (blockEntity != null && blockEntity instanceof TrashBlockEntity) {
+		if (blockEntity instanceof TrashBlockEntity) {
 			((TrashBlockEntity) blockEntity).onEntityCollision(entityIn);
 		}
 	}
@@ -208,7 +207,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
 		super.appendHoverText(stack, worldIn, tooltip, flagIn);
-		tooltip.add(new TranslatableComponent("trashed.trash_tooltip").withStyle(ChatFormatting.GOLD));
+		tooltip.add(Component.translatable("trashed.trash_tooltip").withStyle(ChatFormatting.GOLD));
 	}
 
 	@Override

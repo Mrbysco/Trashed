@@ -14,9 +14,9 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
@@ -25,7 +25,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.mrbysco.trashed.init.TrashedRegistry.*;
+import static com.mrbysco.trashed.init.TrashedRegistry.BLOCKS;
+import static com.mrbysco.trashed.init.TrashedRegistry.ENERGY_TRASH_CAN;
+import static com.mrbysco.trashed.init.TrashedRegistry.FLUID_TRASH_CAN;
+import static com.mrbysco.trashed.init.TrashedRegistry.TRASH_CAN;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class TrashedCreator {
@@ -35,7 +38,7 @@ public class TrashedCreator {
 		ExistingFileHelper helper = event.getExistingFileHelper();
 
 		if (event.includeServer()) {
-			gen.addProvider(new Loots(gen));
+			gen.addProvider(event.includeServer(), new Loots(gen));
 		}
 	}
 

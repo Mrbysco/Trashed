@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
@@ -68,7 +68,7 @@ public class FluidTrashBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public CompoundTag getTileData() {
+	public CompoundTag getPersistentData() {
 		CompoundTag nbt = new CompoundTag();
 		this.saveAdditional(nbt);
 		return nbt;
@@ -77,7 +77,7 @@ public class FluidTrashBlockEntity extends BlockEntity {
 	@Override
 	@Nonnull
 	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
-		if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && level != null && getBlockState().getBlock() instanceof FluidTrashBlock && getBlockState().getValue(FluidTrashBlock.ENABLED)) {
+		if (capability == ForgeCapabilities.FLUID_HANDLER && level != null && getBlockState().getBlock() instanceof FluidTrashBlock && getBlockState().getValue(FluidTrashBlock.ENABLED)) {
 			if (this.holder == null)
 				this.holder = LazyOptional.of(() -> tank);
 			return holder.cast();

@@ -25,6 +25,6 @@ public class Trashed {
 
 		TrashedRegistry.ITEMS.register(eventBus);
 		TrashedRegistry.BLOCKS.register(eventBus);
-		TrashedRegistry.BLOCK_ENTITIES.register(eventBus);
+		TrashedRegistry.BLOCK_ENTITY_TYPES.register(eventBus);
 	}
 }

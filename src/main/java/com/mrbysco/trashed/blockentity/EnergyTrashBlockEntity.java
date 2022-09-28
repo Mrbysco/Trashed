@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
 
@@ -67,7 +67,7 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public CompoundTag getTileData() {
+	public CompoundTag getPersistentData() {
 		CompoundTag nbt = new CompoundTag();
 		this.saveAdditional(nbt);
 		return nbt;
@@ -76,7 +76,7 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 	@Override
 	@Nonnull
 	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
-		if (capability == CapabilityEnergy.ENERGY && level != null && getBlockState().getBlock() instanceof EnergyTrashBlock && getBlockState().getValue(EnergyTrashBlock.ENABLED)) {
+		if (capability == ForgeCapabilities.ENERGY && level != null && getBlockState().getBlock() instanceof EnergyTrashBlock && getBlockState().getValue(EnergyTrashBlock.ENABLED)) {
 			if (this.holder == null)
 				this.holder = LazyOptional.of(() -> storage);
 			return holder.cast();

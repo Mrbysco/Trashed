@@ -11,7 +11,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -65,7 +64,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 
 	@Override
 	protected Component getDefaultName() {
-		return new TranslatableComponent("trashed.container.trashcan");
+		return Component.translatable("trashed.container.trashcan");
 	}
 
 	@Override
@@ -83,7 +82,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
 		if (level != null && getBlockState().getBlock() instanceof TrashBlock && !getBlockState().getValue(TrashBlock.ENABLED)) {
 			return super.getCapability(cap, side);
-		} else if (!this.remove && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+		} else if (!this.remove && cap == net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER) {
 			if (this.trashHandler == null) {
 				this.trashHandler = net.minecraftforge.common.util.LazyOptional.of(this::createHandler);
 			}
@@ -352,7 +351,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	@Override
-	public CompoundTag getTileData() {
+	public CompoundTag getPersistentData() {
 		CompoundTag nbt = new CompoundTag();
 		this.saveAdditional(nbt);
 		return nbt;
