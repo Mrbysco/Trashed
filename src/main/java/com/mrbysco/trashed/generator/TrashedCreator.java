@@ -1,17 +1,15 @@
 package com.mrbysco.trashed.generator;
 
-import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.loot.BlockLoot;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.LootTable.Builder;
 import net.minecraft.world.level.storage.loot.LootTables;
 import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
@@ -21,9 +19,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.Set;
 
 import static com.mrbysco.trashed.init.TrashedRegistry.BLOCKS;
 import static com.mrbysco.trashed.init.TrashedRegistry.ENERGY_TRASH_CAN;
@@ -34,24 +30,20 @@ import static com.mrbysco.trashed.init.TrashedRegistry.TRASH_CAN;
 public class TrashedCreator {
 	@SubscribeEvent
 	public static void gatherData(GatherDataEvent event) {
-		DataGenerator gen = event.getGenerator();
+		DataGenerator generator = event.getGenerator();
+		PackOutput packOutput = generator.getPackOutput();
 		ExistingFileHelper helper = event.getExistingFileHelper();
 
 		if (event.includeServer()) {
-			gen.addProvider(event.includeServer(), new Loots(gen));
+			generator.addProvider(event.includeServer(), new Loots(packOutput));
 		}
 	}
 
 	private static class Loots extends LootTableProvider {
-		public Loots(DataGenerator gen) {
-			super(gen);
-		}
-
-		@Override
-		protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>>, LootContextParamSet>> getTables() {
-			return ImmutableList.of(
-					Pair.of(Blocks::new, LootContextParamSets.BLOCK)
-			);
+		public Loots(PackOutput packOutput) {
+			super(packOutput, Set.of(), List.of(
+					new SubProviderEntry(Blocks::new, LootContextParamSets.BLOCK)
+			));
 		}
 
 		@Override
@@ -59,9 +51,14 @@ public class TrashedCreator {
 			map.forEach((name, table) -> LootTables.validate(validationContext, name, table));
 		}
 
-		private static class Blocks extends BlockLoot {
+		private static class Blocks extends BlockLootSubProvider {
+
+			protected Blocks() {
+				super(Set.of(), FeatureFlags.REGISTRY.allFlags());
+			}
+
 			@Override
-			protected void addTables() {
+			protected void generate() {
 				this.dropSelf(TRASH_CAN.get());
 				this.dropSelf(FLUID_TRASH_CAN.get());
 				this.dropSelf(ENERGY_TRASH_CAN.get());
