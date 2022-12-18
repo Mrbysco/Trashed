@@ -28,6 +28,8 @@ public class Trashed {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, TrashedConfig.serverSpec);
 		eventBus.register(TrashedConfig.class);
 
+		eventBus.addListener(this::addTabContents);
+
 		TrashedRegistry.ITEMS.register(eventBus);
 		TrashedRegistry.BLOCKS.register(eventBus);
 		TrashedRegistry.BLOCK_ENTITY_TYPES.register(eventBus);
