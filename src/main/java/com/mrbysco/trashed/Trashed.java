@@ -2,8 +2,10 @@ package com.mrbysco.trashed;
 
 import com.mojang.logging.LogUtils;
 import com.mrbysco.trashed.config.TrashedConfig;
+import com.mrbysco.trashed.init.TrashedDamageTypes;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.CreativeModeTabEvent;
@@ -21,8 +23,6 @@ public class Trashed {
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final String MOD_ID = "trashed";
 
-	public static final DamageSource trashDamage = new DamageSource("trashed").setMagic().bypassArmor();
-
 	public Trashed() {
 		IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, TrashedConfig.serverSpec);
@@ -33,6 +33,10 @@ public class Trashed {
 		TrashedRegistry.ITEMS.register(eventBus);
 		TrashedRegistry.BLOCKS.register(eventBus);
 		TrashedRegistry.BLOCK_ENTITY_TYPES.register(eventBus);
+	}
+
+	public static DamageSource getTrashDamageSource(Entity entity) {
+		return entity.damageSources().source(TrashedDamageTypes.TRASHED, entity);
 	}
 
 	private void addTabContents(final CreativeModeTabEvent.BuildContents event) {

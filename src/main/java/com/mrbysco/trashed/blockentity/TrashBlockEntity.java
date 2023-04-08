@@ -213,7 +213,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	public static boolean hurtEntity(LivingEntity livingEnt) {
-		return livingEnt.hurt(Trashed.trashDamage, 1.0F);
+		return livingEnt.hurt(Trashed.getTrashDamageSource(livingEnt), 1.0F);
 	}
 
 	public static boolean captureItem(Container inv, ItemEntity itemEnt) {
