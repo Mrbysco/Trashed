@@ -63,13 +63,13 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 	}
 
 	@Override
-	public boolean canPlaceLiquid(BlockGetter worldIn, BlockPos pos, BlockState state, Fluid fluidIn) {
-		return SimpleWaterloggedBlock.super.canPlaceLiquid(worldIn, pos, state, fluidIn);
+	public boolean canPlaceLiquid(BlockGetter level, BlockPos pos, BlockState state, Fluid fluidIn) {
+		return SimpleWaterloggedBlock.super.canPlaceLiquid(level, pos, state, fluidIn);
 	}
 
 	@Override
-	public boolean placeLiquid(LevelAccessor worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn) {
-		return SimpleWaterloggedBlock.super.placeLiquid(worldIn, pos, state, fluidStateIn);
+	public boolean placeLiquid(LevelAccessor level, BlockPos pos, BlockState state, FluidState fluidStateIn) {
+		return SimpleWaterloggedBlock.super.placeLiquid(level, pos, state, fluidStateIn);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -109,22 +109,22 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 	 */
 
 	@Override
-	public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
+	public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
 		if (oldState.getBlock() != state.getBlock()) {
-			this.updateState(worldIn, pos, state);
+			this.updateState(level, pos, state);
 		}
 	}
 
-	private void updateState(Level worldIn, BlockPos pos, BlockState state) {
-		boolean flag = !worldIn.hasNeighborSignal(pos);
+	private void updateState(Level level, BlockPos pos, BlockState state) {
+		boolean flag = !level.hasNeighborSignal(pos);
 		if (flag != state.getValue(ENABLED)) {
-			worldIn.setBlockAndUpdate(pos, state.setValue(ENABLED, flag));
+			level.setBlockAndUpdate(pos, state.setValue(ENABLED, flag));
 		}
 	}
 
 	@Override
-	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
-		this.updateState(worldIn, pos, state);
+	public void neighborChanged(BlockState state, Level level, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+		this.updateState(level, pos, state);
 	}
 
 	@Nullable

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "tag": "forge:cobblestone"
+    },
+    "R": {
+      "tag": "forge:storage_blocks/redstone"
+    },
+    "S": {
+      "tag": "forge:stone"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "CRC",
+    "CCC"
+  ],
+  "result": {
+    "item": "trashed:energy_trash_can"
+  },
+  "show_notification": true
+}

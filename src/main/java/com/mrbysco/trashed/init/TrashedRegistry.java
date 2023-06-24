@@ -10,8 +10,8 @@ import com.mrbysco.trashed.blockentity.TrashBlockEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.material.Material;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -35,6 +35,6 @@ public class TrashedRegistry {
 	public static final RegistryObject<BlockEntityType<EnergyTrashBlockEntity>> ENERGY_TRASH_TILE = BLOCK_ENTITY_TYPES.register("energy_trash_can", () -> BlockEntityType.Builder.of(EnergyTrashBlockEntity::new, ENERGY_TRASH_CAN.get()).build(null));
 
 	private static Block.Properties blockBuilder() {
-		return Block.Properties.of(Material.STONE).strength(2.0F, 6.0F);
+		return Block.Properties.copy(Blocks.STONE).strength(2.0F, 6.0F);
 	}
 }

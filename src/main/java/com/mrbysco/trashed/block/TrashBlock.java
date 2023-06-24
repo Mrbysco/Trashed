@@ -57,7 +57,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
+	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		if (state.getValue(ENABLED)) {
 			return switch (state.getValue(TYPE)) {
 				default -> SINGLE_SHAPE;
@@ -74,12 +74,12 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
-		if (!worldIn.isClientSide) {
+	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
+		if (!level.isClientSide) {
 			if (player.getItemInHand(hand).getItem() == TrashedRegistry.TRASH_CAN_ITEM.get() && result.getDirection().equals(Direction.UP)) {
 				return InteractionResult.FAIL;
 			} else {
-				BlockEntity tile = getTrashBlockEntity(worldIn, state, pos);
+				BlockEntity tile = getTrashBlockEntity(level, state, pos);
 				if (tile instanceof TrashBlockEntity) {
 					NetworkHooks.openScreen((ServerPlayer) player, (TrashBlockEntity) tile, pos);
 				}
@@ -90,38 +90,38 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (!worldIn.isClientSide && state.getBlock() != newState.getBlock()) {
+	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+		if (!level.isClientSide && state.getBlock() != newState.getBlock()) {
 			BlockPos tePos = pos;
 			if (state.getValue(TYPE) == TrashType.BOTTOM) {
-				worldIn.removeBlockEntity(pos.above());
-				worldIn.setBlockAndUpdate(pos.above(), worldIn.getBlockState(pos.above()).setValue(TYPE, TrashType.SINGLE));
-				BlockEntity tile = getTrashBlockEntity(worldIn, state, pos);
-				BlockEntity tile2 = getTrashBlockEntity(worldIn, state, pos.above());
+				level.removeBlockEntity(pos.above());
+				level.setBlockAndUpdate(pos.above(), level.getBlockState(pos.above()).setValue(TYPE, TrashType.SINGLE));
+				BlockEntity tile = getTrashBlockEntity(level, state, pos);
+				BlockEntity tile2 = getTrashBlockEntity(level, state, pos.above());
 				if (tile instanceof TrashBlockEntity oldBE && tile2 instanceof TrashBlockEntity newBE) {
 					newBE.setItems(oldBE.getItems());
 				}
 				tePos = pos.above();
-			} else if (state.getValue(TYPE) == TrashType.TOP && !worldIn.isEmptyBlock(pos.below())) {
-				worldIn.setBlockAndUpdate(pos.below(), worldIn.getBlockState(pos.below()).setValue(TYPE, TrashType.SINGLE));
+			} else if (state.getValue(TYPE) == TrashType.TOP && !level.isEmptyBlock(pos.below())) {
+				level.setBlockAndUpdate(pos.below(), level.getBlockState(pos.below()).setValue(TYPE, TrashType.SINGLE));
 			}
 
 			if (state.getValue(TYPE) == TrashType.SINGLE) {
-				BlockEntity tile = getTrashBlockEntity(worldIn, state, tePos);
+				BlockEntity tile = getTrashBlockEntity(level, state, tePos);
 				if (tile instanceof TrashBlockEntity) {
-					Containers.dropContents(worldIn, tePos, (TrashBlockEntity) tile);
-					worldIn.updateNeighbourForOutputSignal(getTrashPos(state, tePos), this);
+					Containers.dropContents(level, tePos, (TrashBlockEntity) tile);
+					level.updateNeighbourForOutputSignal(getTrashPos(state, tePos), this);
 				}
 			}
 
-			super.onRemove(state, worldIn, pos, newState, isMoving);
+			super.onRemove(state, level, pos, newState, isMoving);
 		}
 	}
 
 	@Override
-	public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
+	public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
 		if (stack.hasCustomHoverName()) {
-			BlockEntity tile = getTrashBlockEntity(worldIn, state, pos);
+			BlockEntity tile = getTrashBlockEntity(level, state, pos);
 			if (tile instanceof TrashBlockEntity) {
 				((TrashBlockEntity) tile).setCustomName(stack.getHoverName());
 			}
@@ -129,8 +129,8 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
-		BlockEntity blockEntity = getTrashBlockEntity(worldIn, state, pos);
+	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entityIn) {
+		BlockEntity blockEntity = getTrashBlockEntity(level, state, pos);
 		if (blockEntity instanceof TrashBlockEntity) {
 			((TrashBlockEntity) blockEntity).onEntityCollision(entityIn);
 		}
@@ -141,38 +141,38 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	 */
 
 	@Override
-	public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
+	public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
 		if (oldState.getBlock() != state.getBlock()) {
-			this.updateState(worldIn, pos, state);
+			this.updateState(level, pos, state);
 		}
 	}
 
-	private void updateState(Level worldIn, BlockPos pos, BlockState state) {
-		boolean flag = !worldIn.hasNeighborSignal(pos);
+	private void updateState(Level level, BlockPos pos, BlockState state) {
+		boolean flag = !level.hasNeighborSignal(pos);
 		if (flag != state.getValue(ENABLED)) {
 			if (state.getValue(TYPE) == TrashType.BOTTOM) {
-				boolean flag2 = !worldIn.hasNeighborSignal(pos.above());
+				boolean flag2 = !level.hasNeighborSignal(pos.above());
 				if (flag2) {
-					worldIn.setBlockAndUpdate(pos, state.setValue(ENABLED, Boolean.valueOf(flag)));
-					BlockState state2 = worldIn.getBlockState(pos.above());
-					worldIn.setBlockAndUpdate(pos.above(), state2.setValue(ENABLED, flag));
+					level.setBlockAndUpdate(pos, state.setValue(ENABLED, Boolean.valueOf(flag)));
+					BlockState state2 = level.getBlockState(pos.above());
+					level.setBlockAndUpdate(pos.above(), state2.setValue(ENABLED, flag));
 				}
 			} else if (state.getValue(TYPE) == TrashType.TOP) {
-				boolean flag2 = !worldIn.hasNeighborSignal(pos.below());
+				boolean flag2 = !level.hasNeighborSignal(pos.below());
 				if (flag2) {
-					worldIn.setBlockAndUpdate(pos, state.setValue(ENABLED, Boolean.valueOf(flag)));
-					BlockState state2 = worldIn.getBlockState(pos.below());
-					worldIn.setBlockAndUpdate(pos.below(), state2.setValue(ENABLED, flag));
+					level.setBlockAndUpdate(pos, state.setValue(ENABLED, Boolean.valueOf(flag)));
+					BlockState state2 = level.getBlockState(pos.below());
+					level.setBlockAndUpdate(pos.below(), state2.setValue(ENABLED, flag));
 				}
 			} else {
-				worldIn.setBlockAndUpdate(pos, state.setValue(ENABLED, Boolean.valueOf(flag)));
+				level.setBlockAndUpdate(pos, state.setValue(ENABLED, Boolean.valueOf(flag)));
 			}
 		}
 	}
 
 	@Override
-	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
-		this.updateState(worldIn, pos, state);
+	public void neighborChanged(BlockState state, Level level, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+		this.updateState(level, pos, state);
 	}
 
 	@Override
@@ -181,8 +181,8 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState state, Level worldIn, BlockPos pos) {
-		return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(getTrashBlockEntity(worldIn, state, pos));
+	public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+		return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(getTrashBlockEntity(level, state, pos));
 	}
 
 	public BlockPos getTrashPos(BlockState state, BlockPos pos) {
@@ -193,20 +193,20 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 		}
 	}
 
-	public BlockEntity getTrashBlockEntity(Level worldIn, BlockState state, BlockPos pos) {
+	public BlockEntity getTrashBlockEntity(Level level, BlockState state, BlockPos pos) {
 		if (state.getBlock() == this) {
 			if (state.getValue(TYPE) == TrashType.TOP) {
-				return worldIn.getBlockEntity(pos.below());
+				return level.getBlockEntity(pos.below());
 			} else {
-				return worldIn.getBlockEntity(pos);
+				return level.getBlockEntity(pos);
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-		super.appendHoverText(stack, worldIn, tooltip, flagIn);
+	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flagIn) {
+		super.appendHoverText(stack, level, tooltip, flagIn);
 		tooltip.add(Component.translatable("trashed.trash_tooltip").withStyle(ChatFormatting.GOLD));
 	}
 
@@ -218,10 +218,10 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		BlockPos pos = context.getClickedPos();
-		Level worldIn = context.getLevel();
-		BlockState bottomBlock = worldIn.getBlockState(pos.below());
+		Level level = context.getLevel();
+		BlockState bottomBlock = level.getBlockState(pos.below());
 		if (bottomBlock.getBlock() == this && bottomBlock.getValue(TYPE) == TrashType.SINGLE) {
-			worldIn.setBlockAndUpdate(pos.below(), bottomBlock.setValue(TYPE, TrashType.BOTTOM));
+			level.setBlockAndUpdate(pos.below(), bottomBlock.setValue(TYPE, TrashType.BOTTOM));
 			return this.defaultBlockState().setValue(FACING, bottomBlock.getValue(FACING)).setValue(ENABLED, bottomBlock.getValue(ENABLED)).setValue(TYPE, TrashType.TOP);
 		} else {
 			return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()).setValue(ENABLED, true);

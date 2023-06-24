@@ -27,7 +27,7 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	}
 
 	@Override
-	public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
+	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		if (state.getValue(ENABLED)) {
 			return SINGLE_SHAPE;
 		} else {
@@ -36,20 +36,20 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (state.getBlock() != newState.getBlock()) {
-			BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+			BlockEntity blockEntity = level.getBlockEntity(pos);
 			if (blockEntity instanceof EnergyTrashBlockEntity) {
-				worldIn.updateNeighbourForOutputSignal(pos, this);
+				level.updateNeighbourForOutputSignal(pos, this);
 			}
 
-			super.onRemove(state, worldIn, pos, newState, isMoving);
+			super.onRemove(state, level, pos, newState, isMoving);
 		}
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-		super.appendHoverText(stack, worldIn, tooltip, flagIn);
+	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flagIn) {
+		super.appendHoverText(stack, level, tooltip, flagIn);
 	}
 
 	@Nullable

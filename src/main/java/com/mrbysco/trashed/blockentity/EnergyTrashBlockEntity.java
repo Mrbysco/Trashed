@@ -35,7 +35,11 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
-		storage.deserializeNBT(tag);
+		if (tag.contains("storage")) {
+			CompoundTag storageTag = tag.getCompound("storage");
+			if (!storageTag.isEmpty())
+				storage.deserializeNBT(tag.getCompound("storage"));
+		}
 	}
 
 	@Override

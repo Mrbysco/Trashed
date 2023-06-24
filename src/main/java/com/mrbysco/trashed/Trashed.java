@@ -8,7 +8,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.CreativeModeTabEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -39,8 +39,8 @@ public class Trashed {
 		return entity.damageSources().source(TrashedDamageTypes.TRASHED, entity);
 	}
 
-	private void addTabContents(final CreativeModeTabEvent.BuildContents event) {
-		if (event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
+	private void addTabContents(final BuildCreativeModeTabContentsEvent event) {
+		if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
 			List<ItemStack> stacks = TrashedRegistry.ITEMS.getEntries().stream().map(reg -> new ItemStack(reg.get())).toList();
 			event.acceptAll(stacks);
 		}
