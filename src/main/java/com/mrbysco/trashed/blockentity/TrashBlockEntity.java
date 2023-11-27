@@ -33,6 +33,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.capabilities.Capabilities;
+import net.neoforged.neoforge.common.capabilities.Capability;
+import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
@@ -42,7 +47,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	private int deletionCooldown = -1;
 	private long tickedGameTime;
 
-	private net.minecraftforge.common.util.LazyOptional<net.minecraftforge.items.IItemHandlerModifiable> trashHandler;
+	private LazyOptional<IItemHandlerModifiable> trashHandler;
 
 	protected TrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
 		super(entityType, pos, state);
@@ -79,20 +84,20 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	@Override
-	public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, Direction side) {
+	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
 		if (level != null && getBlockState().getBlock() instanceof TrashBlock && !getBlockState().getValue(TrashBlock.ENABLED)) {
 			return super.getCapability(cap, side);
-		} else if (!this.remove && cap == net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER) {
+		} else if (!this.remove && cap == Capabilities.ITEM_HANDLER) {
 			if (this.trashHandler == null) {
-				this.trashHandler = net.minecraftforge.common.util.LazyOptional.of(this::createHandler);
+				this.trashHandler = LazyOptional.of(this::createHandler);
 			}
 			return this.trashHandler.cast();
 		}
 		return super.getCapability(cap, side);
 	}
 
-	private net.minecraftforge.items.IItemHandlerModifiable createHandler() {
-		return new net.minecraftforge.items.wrapper.InvWrapper(this);
+	private IItemHandlerModifiable createHandler() {
+		return new InvWrapper(this);
 	}
 
 	@Override

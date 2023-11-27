@@ -12,8 +12,8 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
-import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.registries.VanillaRegistries;
@@ -25,19 +25,17 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.DatapackBuiltinEntriesProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class TrashedDatagen {
@@ -49,7 +47,7 @@ public class TrashedDatagen {
 
 		if (event.includeServer()) {
 			generator.addProvider(event.includeServer(), new Loots(packOutput));
-			generator.addProvider(event.includeServer(), new Recipes(packOutput));
+			generator.addProvider(event.includeServer(), new Recipes(packOutput, event.getLookupProvider()));
 
 			generator.addProvider(event.includeServer(), new DatapackBuiltinEntriesProvider(
 					packOutput, CompletableFuture.supplyAsync(TrashedDatagen::getProvider), Set.of(Trashed.MOD_ID)));
@@ -92,18 +90,18 @@ public class TrashedDatagen {
 
 			@Override
 			protected Iterable<Block> getKnownBlocks() {
-				return (Iterable<Block>) TrashedRegistry.BLOCKS.getEntries().stream().map(RegistryObject::get)::iterator;
+				return (Iterable<Block>) TrashedRegistry.BLOCKS.getEntries().stream().map(holder -> (Block) holder.get())::iterator;
 			}
 		}
 	}
 
 	private static class Recipes extends RecipeProvider {
-		public Recipes(PackOutput packOutput) {
-			super(packOutput);
+		public Recipes(PackOutput packOutput, CompletableFuture<net.minecraft.core.HolderLookup.Provider> lookupProvider) {
+			super(packOutput, lookupProvider);
 		}
 
 		@Override
-		protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
+		protected void buildRecipes(RecipeOutput recipeOutput) {
 			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.ENERGY_TRASH_CAN.get())
 					.pattern("SSS")
 					.pattern("CRC")
@@ -114,7 +112,7 @@ public class TrashedDatagen {
 					.unlockedBy("has_stone", has(Tags.Items.STONE))
 					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONE))
 					.unlockedBy("has_redstone_block", has(Tags.Items.STORAGE_BLOCKS_REDSTONE))
-					.save(consumer);
+					.save(recipeOutput);
 
 			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.FLUID_TRASH_CAN.get())
 					.pattern("SSS")
@@ -126,7 +124,7 @@ public class TrashedDatagen {
 					.unlockedBy("has_stone", has(Tags.Items.STONE))
 					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONE))
 					.unlockedBy("has_bucket", has(Items.BUCKET))
-					.save(consumer);
+					.save(recipeOutput);
 
 			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.TRASH_CAN.get())
 					.pattern("SSS")
@@ -138,7 +136,7 @@ public class TrashedDatagen {
 					.unlockedBy("has_stone", has(Tags.Items.STONE))
 					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONE))
 					.unlockedBy("has_hopper", has(Items.HOPPER))
-					.save(consumer);
+					.save(recipeOutput);
 		}
 	}
 }

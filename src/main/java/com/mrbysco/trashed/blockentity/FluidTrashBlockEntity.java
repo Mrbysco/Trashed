@@ -11,15 +11,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import net.neoforged.neoforge.common.capabilities.Capabilities;
+import net.neoforged.neoforge.common.capabilities.Capability;
+import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FluidTrashBlockEntity extends BlockEntity {
 	protected FluidTank tank = new FluidTank(1000000);
@@ -75,9 +74,9 @@ public class FluidTrashBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	@Nonnull
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
-		if (capability == ForgeCapabilities.FLUID_HANDLER && level != null && getBlockState().getBlock() instanceof FluidTrashBlock && getBlockState().getValue(FluidTrashBlock.ENABLED)) {
+	@NotNull
+	public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing) {
+		if (capability == Capabilities.FLUID_HANDLER && level != null && getBlockState().getBlock() instanceof FluidTrashBlock && getBlockState().getValue(FluidTrashBlock.ENABLED)) {
 			if (this.holder == null)
 				this.holder = LazyOptional.of(() -> tank);
 			return holder.cast();

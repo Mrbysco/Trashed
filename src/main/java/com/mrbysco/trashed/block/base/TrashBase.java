@@ -2,6 +2,7 @@ package com.mrbysco.trashed.block.base;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -63,8 +64,8 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 	}
 
 	@Override
-	public boolean canPlaceLiquid(BlockGetter level, BlockPos pos, BlockState state, Fluid fluidIn) {
-		return SimpleWaterloggedBlock.super.canPlaceLiquid(level, pos, state, fluidIn);
+	public boolean canPlaceLiquid(Player player, BlockGetter level, BlockPos pos, BlockState state, Fluid fluidIn) {
+		return SimpleWaterloggedBlock.super.canPlaceLiquid(player, level, pos, state, fluidIn);
 	}
 
 	@Override

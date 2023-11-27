@@ -42,10 +42,10 @@
   },
   "requirements": [
     [
+      "has_the_recipe",
       "has_stone",
       "has_cobblestone",
-      "has_hopper",
-      "has_the_recipe"
+      "has_hopper"
     ]
   ],
   "rewards": {

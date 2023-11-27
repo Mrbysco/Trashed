@@ -11,14 +11,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.EnergyStorage;
-import net.minecraftforge.energy.IEnergyStorage;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import net.neoforged.neoforge.common.capabilities.Capabilities;
+import net.neoforged.neoforge.common.capabilities.Capability;
+import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.energy.EnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class EnergyTrashBlockEntity extends BlockEntity {
 	protected EnergyStorage storage = new EnergyStorage(1000000);
@@ -78,9 +77,9 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	@Nonnull
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
-		if (capability == ForgeCapabilities.ENERGY && level != null && getBlockState().getBlock() instanceof EnergyTrashBlock && getBlockState().getValue(EnergyTrashBlock.ENABLED)) {
+	@NotNull
+	public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing) {
+		if (capability == Capabilities.ENERGY && level != null && getBlockState().getBlock() instanceof EnergyTrashBlock && getBlockState().getValue(EnergyTrashBlock.ENABLED)) {
 			if (this.holder == null)
 				this.holder = LazyOptional.of(() -> storage);
 			return holder.cast();

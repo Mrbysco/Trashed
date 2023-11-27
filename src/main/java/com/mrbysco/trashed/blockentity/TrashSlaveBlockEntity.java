@@ -6,11 +6,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import net.neoforged.neoforge.common.capabilities.Capability;
+import net.neoforged.neoforge.common.util.LazyOptional;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class TrashSlaveBlockEntity extends BlockEntity {
 
@@ -22,9 +21,9 @@ public class TrashSlaveBlockEntity extends BlockEntity {
 		this(TrashedRegistry.TRASH_SLAVE_TILE.get(), pos, state);
 	}
 
-	@Nonnull
+	@NotNull
 	@Override
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+	public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
 		return this.level.getBlockEntity(this.worldPosition.below()).getCapability(cap, side);
 	}
 }

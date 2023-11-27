@@ -1,17 +1,17 @@
 package com.mrbysco.trashed.config;
 
 import com.mrbysco.trashed.Trashed;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.IntValue;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.config.ModConfigEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class TrashedConfig {
 	public static class Server {
 		public final IntValue itemTrashQuantity;
 
-		Server(ForgeConfigSpec.Builder builder) {
+		Server(ModConfigSpec.Builder builder) {
 			builder.comment("Trashing settings")
 					.push("trashing");
 
@@ -23,11 +23,11 @@ public class TrashedConfig {
 		}
 	}
 
-	public static final ForgeConfigSpec serverSpec;
+	public static final ModConfigSpec serverSpec;
 	public static final Server SERVER;
 
 	static {
-		final Pair<Server, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Server::new);
+		final Pair<Server, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(Server::new);
 		serverSpec = specPair.getRight();
 		SERVER = specPair.getLeft();
 	}
