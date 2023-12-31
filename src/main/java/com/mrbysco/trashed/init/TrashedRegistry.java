@@ -38,6 +38,6 @@ public class TrashedRegistry {
 	public static final Supplier<BlockEntityType<EnergyTrashBlockEntity>> ENERGY_TRASH_TILE = BLOCK_ENTITY_TYPES.register("energy_trash_can", () -> BlockEntityType.Builder.of(EnergyTrashBlockEntity::new, ENERGY_TRASH_CAN.get()).build(null));
 
 	private static Block.Properties blockBuilder() {
-		return Block.Properties.copy(Blocks.STONE).strength(2.0F, 6.0F);
+		return Block.Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F);
 	}
 }

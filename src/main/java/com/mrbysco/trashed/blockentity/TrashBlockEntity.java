@@ -33,11 +33,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.Capabilities;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.util.LazyOptional;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
 
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
@@ -46,8 +41,6 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	private NonNullList<ItemStack> trashContents = NonNullList.withSize(27, ItemStack.EMPTY);
 	private int deletionCooldown = -1;
 	private long tickedGameTime;
-
-	private LazyOptional<IItemHandlerModifiable> trashHandler;
 
 	protected TrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
 		super(entityType, pos, state);
@@ -81,23 +74,6 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	@Override
 	public AbstractContainerMenu createMenu(int id, Inventory playerInv, Player player) {
 		return ChestMenu.threeRows(id, playerInv, this);
-	}
-
-	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-		if (level != null && getBlockState().getBlock() instanceof TrashBlock && !getBlockState().getValue(TrashBlock.ENABLED)) {
-			return super.getCapability(cap, side);
-		} else if (!this.remove && cap == Capabilities.ITEM_HANDLER) {
-			if (this.trashHandler == null) {
-				this.trashHandler = LazyOptional.of(this::createHandler);
-			}
-			return this.trashHandler.cast();
-		}
-		return super.getCapability(cap, side);
-	}
-
-	private IItemHandlerModifiable createHandler() {
-		return new InvWrapper(this);
 	}
 
 	@Override
@@ -392,14 +368,5 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 
 	public VoxelShape getEntityCollectionArea() {
 		return Block.box(2.5D, 0.0D, 2.5D, 13.5D, 24.0D, 13.5D);
-	}
-
-	@Override
-	public void invalidateCaps() {
-		super.invalidateCaps();
-		if (trashHandler != null) {
-			this.trashHandler.invalidate();
-			this.trashHandler = null;
-		}
 	}
 }

@@ -52,6 +52,5 @@
     "recipes": [
       "trashed:fluid_trash_can"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

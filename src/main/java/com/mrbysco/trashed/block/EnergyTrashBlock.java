@@ -1,5 +1,6 @@
 package com.mrbysco.trashed.block;
 
+import com.mojang.serialization.MapCodec;
 import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.blockentity.EnergyTrashBlockEntity;
 import com.mrbysco.trashed.init.TrashedRegistry;
@@ -9,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -21,9 +23,15 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBlock {
+	public static final MapCodec<EnergyTrashBlock> CODEC = simpleCodec(EnergyTrashBlock::new);
 
 	public EnergyTrashBlock(Properties properties) {
 		super(properties);
+	}
+
+	@Override
+	protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+		return CODEC;
 	}
 
 	@Override
@@ -48,8 +56,8 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flagIn) {
-		super.appendHoverText(stack, level, tooltip, flagIn);
+	public void appendHoverText(ItemStack stack, @Nullable BlockGetter blockGetter, List<Component> tooltip, TooltipFlag flagIn) {
+		super.appendHoverText(stack, blockGetter, tooltip, flagIn);
 	}
 
 	@Nullable
@@ -64,7 +72,8 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	}
 
 	@Nullable
-	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> p_151989_, BlockEntityType<? extends EnergyTrashBlockEntity> p_151990_) {
-		return level.isClientSide ? null : createTickerHelper(p_151989_, p_151990_, EnergyTrashBlockEntity::serverTick);
+	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> blockEntityTicker,
+																					BlockEntityType<? extends EnergyTrashBlockEntity> entityType) {
+		return level.isClientSide ? null : createTickerHelper(blockEntityTicker, entityType, EnergyTrashBlockEntity::serverTick);
 	}
 }

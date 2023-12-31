@@ -1,9 +1,7 @@
 package com.mrbysco.trashed.blockentity;
 
-import com.mrbysco.trashed.block.EnergyTrashBlock;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -11,17 +9,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.capabilities.Capabilities;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.util.LazyOptional;
-import net.neoforged.neoforge.energy.EnergyStorage;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class EnergyTrashBlockEntity extends BlockEntity {
-	protected EnergyStorage storage = new EnergyStorage(1000000);
-	private LazyOptional<IEnergyStorage> holder = LazyOptional.of(() -> storage);
 
 	protected EnergyTrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
 		super(entityType, pos, state);
@@ -34,17 +25,11 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
-		if (tag.contains("storage")) {
-			CompoundTag storageTag = tag.getCompound("storage");
-			if (!storageTag.isEmpty())
-				storage.deserializeNBT(tag.getCompound("storage"));
-		}
 	}
 
 	@Override
 	public void saveAdditional(CompoundTag tag) {
 		super.saveAdditional(tag);
-		tag.put("storage", storage.serializeNBT());
 	}
 
 	@Override
@@ -76,36 +61,25 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 		return nbt;
 	}
 
-	@Override
-	@NotNull
-	public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing) {
-		if (capability == Capabilities.ENERGY && level != null && getBlockState().getBlock() instanceof EnergyTrashBlock && getBlockState().getValue(EnergyTrashBlock.ENABLED)) {
-			if (this.holder == null)
-				this.holder = LazyOptional.of(() -> storage);
-			return holder.cast();
-		}
-
-		return super.getCapability(capability, facing);
-	}
 
 	public static void serverTick(Level level, BlockPos pos, BlockState state, EnergyTrashBlockEntity trashBlockEntity) {
 		if (level != null) {
 			if (!trashBlockEntity.isEmpty()) {
-				trashBlockEntity.storage.extractEnergy(trashBlockEntity.storage.getEnergyStored(), false);
+				IEnergyStorage energyStorage = trashBlockEntity.getStorage();
+				if (energyStorage != null)
+					energyStorage.receiveEnergy(energyStorage.getEnergyStored(), false);
 			}
 		}
 	}
 
 	public boolean isEmpty() {
-		return storage.getEnergyStored() < 1;
+		IEnergyStorage energyStorage = getStorage();
+		if (energyStorage == null) return false;
+		return energyStorage.getEnergyStored() < 1;
 	}
 
-	@Override
-	public void invalidateCaps() {
-		super.invalidateCaps();
-		if (holder != null) {
-			this.holder.invalidate();
-			this.holder = null;
-		}
+	private IEnergyStorage getStorage() {
+		if (level == null) return null;
+		return level.getCapability(Capabilities.EnergyStorage.BLOCK, getBlockPos(), null);
 	}
 }
