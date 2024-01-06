@@ -9,7 +9,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -36,7 +35,6 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -90,7 +88,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 			} else {
 				BlockEntity tile = getTrashBlockEntity(level, state, pos);
 				if (tile instanceof TrashBlockEntity) {
-					NetworkHooks.openScreen((ServerPlayer) player, (TrashBlockEntity) tile, pos);
+					player.openMenu((TrashBlockEntity) tile, pos);
 				}
 				return InteractionResult.SUCCESS;
 			}
