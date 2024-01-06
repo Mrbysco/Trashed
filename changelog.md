@@ -1,1 +1,1 @@
-* Initial update to 1.20.4
+* Update neoforge support past **20.4.70-beta**
