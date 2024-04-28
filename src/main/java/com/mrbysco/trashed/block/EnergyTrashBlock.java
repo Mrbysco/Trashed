@@ -6,6 +6,7 @@ import com.mrbysco.trashed.blockentity.EnergyTrashBlockEntity;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
@@ -56,8 +57,8 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable BlockGetter blockGetter, List<Component> tooltip, TooltipFlag flagIn) {
-		super.appendHoverText(stack, blockGetter, tooltip, flagIn);
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> components, TooltipFlag flag) {
+		super.appendHoverText(stack, context, components, flag);
 	}
 
 	@Nullable

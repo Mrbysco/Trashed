@@ -10,7 +10,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -29,8 +31,8 @@ public class Trashed {
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final String MOD_ID = "trashed";
 
-	public Trashed(IEventBus eventBus) {
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, TrashedConfig.serverSpec);
+	public Trashed(IEventBus eventBus, Dist dist, ModContainer container) {
+		container.registerConfig(ModConfig.Type.SERVER, TrashedConfig.serverSpec);
 		eventBus.register(TrashedConfig.class);
 
 		eventBus.addListener(this::addTabContents);

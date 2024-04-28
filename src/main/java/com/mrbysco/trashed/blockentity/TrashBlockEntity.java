@@ -7,7 +7,9 @@ import com.mrbysco.trashed.config.TrashedConfig;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -275,7 +277,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 		} else if (stack1.getCount() > stack1.getMaxStackSize()) {
 			return false;
 		} else {
-			return ItemStack.isSameItemSameTags(stack1, stack2);
+			return ItemStack.isSameItemSameComponents(stack1, stack2);
 		}
 	}
 
@@ -288,22 +290,22 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	@Override
-	public void load(CompoundTag compound) {
-		super.load(compound);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+		super.loadAdditional(tag, lookupProvider);
 		this.trashContents = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-		if (!this.tryLoadLootTable(compound)) {
-			ContainerHelper.loadAllItems(compound, this.trashContents);
+		if (!this.tryLoadLootTable(tag)) {
+			ContainerHelper.loadAllItems(tag, this.trashContents, lookupProvider);
 		}
 
-		if (compound.contains("DeletionCooldown"))
-			this.deletionCooldown = compound.getInt("DeletionCooldown");
+		if (tag.contains("DeletionCooldown"))
+			this.deletionCooldown = tag.getInt("DeletionCooldown");
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+		super.saveAdditional(tag, lookupProvider);
 		if (!this.trySaveLootTable(tag)) {
-			ContainerHelper.saveAllItems(tag, this.trashContents);
+			ContainerHelper.saveAllItems(tag, this.trashContents, lookupProvider);
 		}
 
 		tag.putInt("DeletionCooldown", this.deletionCooldown);
@@ -315,26 +317,27 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
-		this.load(packet.getTag());
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+		if (pkt.getTag() != null)
+			loadAdditional(pkt.getTag(), lookupProvider);
 	}
 
 	@Override
-	public CompoundTag getUpdateTag() {
-		CompoundTag nbt = new CompoundTag();
-		this.saveAdditional(nbt);
-		return nbt;
+	public CompoundTag getUpdateTag(HolderLookup.Provider lookupProvider) {
+		CompoundTag tag = new CompoundTag();
+		this.saveAdditional(tag, lookupProvider);
+		return tag;
 	}
 
 	@Override
-	public void handleUpdateTag(CompoundTag tag) {
-		this.load(tag);
+	public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+		this.loadAdditional(tag, lookupProvider);
 	}
 
 	@Override
 	public CompoundTag getPersistentData() {
 		CompoundTag nbt = new CompoundTag();
-		this.saveAdditional(nbt);
+		this.saveAdditional(nbt, this.level != null ? this.level.registryAccess() : VanillaRegistries.createLookup());
 		return nbt;
 	}
 

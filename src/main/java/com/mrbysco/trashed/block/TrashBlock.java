@@ -11,11 +11,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -81,19 +81,20 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+	                                          InteractionHand hand, BlockHitResult result) {
 		if (!level.isClientSide) {
-			if (player.getItemInHand(hand).getItem() == TrashedRegistry.TRASH_CAN_ITEM.get() && result.getDirection().equals(Direction.UP)) {
-				return InteractionResult.FAIL;
+			if (stack.getItem() == TrashedRegistry.TRASH_CAN_ITEM.get() && result.getDirection().equals(Direction.UP)) {
+				return ItemInteractionResult.FAIL;
 			} else {
 				BlockEntity tile = getTrashBlockEntity(level, state, pos);
 				if (tile instanceof TrashBlockEntity) {
 					player.openMenu((TrashBlockEntity) tile, pos);
 				}
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
 			}
 		}
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	@Override
@@ -122,16 +123,6 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 			}
 
 			super.onRemove(state, level, pos, newState, isMoving);
-		}
-	}
-
-	@Override
-	public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
-		if (stack.hasCustomHoverName()) {
-			BlockEntity tile = getTrashBlockEntity(level, state, pos);
-			if (tile instanceof TrashBlockEntity) {
-				((TrashBlockEntity) tile).setCustomName(stack.getHoverName());
-			}
 		}
 	}
 
@@ -212,9 +203,9 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flagIn) {
-		super.appendHoverText(stack, level, tooltip, flagIn);
-		tooltip.add(Component.translatable("trashed.trash_tooltip").withStyle(ChatFormatting.GOLD));
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> components, TooltipFlag flag) {
+		super.appendHoverText(stack, context, components, flag);
+		components.add(Component.translatable("trashed.trash_tooltip").withStyle(ChatFormatting.GOLD));
 	}
 
 	@Override

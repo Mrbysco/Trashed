@@ -5,7 +5,7 @@
       "conditions": {
         "items": [
           {
-            "tag": "forge:cobblestone"
+            "items": "#c:cobblestones"
           }
         ]
       },
@@ -15,9 +15,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "minecraft:hopper"
-            ]
+            "items": "minecraft:hopper"
           }
         ]
       },
@@ -27,7 +25,7 @@
       "conditions": {
         "items": [
           {
-            "tag": "forge:stone"
+            "items": "#c:stones"
           }
         ]
       },
