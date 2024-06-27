@@ -10,6 +10,6 @@ public class TrashedDamageTypes {
 	public static final ResourceKey<DamageType> TRASHED = register("trashed");
 
 	private static ResourceKey<DamageType> register(String name) {
-		return ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(Trashed.MOD_ID, name));
+		return ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(Trashed.MOD_ID, name));
 	}
 }

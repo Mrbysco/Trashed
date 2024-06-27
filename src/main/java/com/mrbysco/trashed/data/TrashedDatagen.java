@@ -81,8 +81,8 @@ public class TrashedDatagen {
 
 		private static class Blocks extends BlockLootSubProvider {
 
-			protected Blocks() {
-				super(Set.of(), FeatureFlags.REGISTRY.allFlags());
+			protected Blocks(HolderLookup.Provider provider) {
+				super(Set.of(), FeatureFlags.REGISTRY.allFlags(), provider);
 			}
 
 			@Override
