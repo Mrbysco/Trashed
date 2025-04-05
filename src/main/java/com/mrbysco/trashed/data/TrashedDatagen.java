@@ -28,7 +28,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
+import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
@@ -51,6 +53,33 @@ public class TrashedDatagen {
 					event.getLookupProvider(),
 					Set.of(Trashed.MOD_ID)
 			));
+		}
+	}
+
+	public static class TrashedLanguageProvider extends LanguageProvider {
+		public TrashedLanguageProvider(PackOutput output) {
+			super(output, Trashed.MOD_ID, "en_us");
+		}
+
+		@Override
+		protected void addTranslations() {
+			this.add(TrashedRegistry.TRASH_CAN.get(), "Trash Can");
+			this.add(TrashedRegistry.FLUID_TRASH_CAN.get(), "Fluid Trash Can");
+			this.add(TrashedRegistry.ENERGY_TRASH_CAN.get(), "Energy Trash Can");
+
+			this.add("trashed.container.trashcan", "Trash Can");
+			this.add("trashed.trash_tooltip", "Jump in to trash yourself (Trash Can needs to be two blocks tall)");
+			this.add("death.attack.trashed", "%1$s was thrown into the trash");
+
+			this.addConfig("trashing", "Trashing", "Trashing Settings");
+			this.addConfig("itemTrashQuantity", "Item Trash Quantity", "The quantity of items the Trash Can destroys every cycle [Default: 1]");
+
+		}
+
+		private void addConfig(String path, String name, @Nullable String description) {
+			this.add("trashed.configuration." + path, name);
+			if (description != null && !description.isEmpty())
+				this.add("trashed.configuration." + path + ".tooltip", description);
 		}
 	}
 
