@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": {
-      "tag": "c:cobblestones"
-    },
-    "R": {
-      "tag": "c:storage_blocks/redstone"
-    },
-    "S": {
-      "tag": "c:stones"
-    }
+    "C": "#c:cobblestones",
+    "R": "#c:storage_blocks/redstone",
+    "S": "#c:stones"
   },
   "pattern": [
     "SSS",

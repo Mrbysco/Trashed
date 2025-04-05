@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": {
-      "tag": "c:buckets/empty"
-    },
-    "C": {
-      "tag": "c:cobblestones"
-    },
-    "S": {
-      "tag": "c:stones"
-    }
+    "B": "#c:buckets/empty",
+    "C": "#c:cobblestones",
+    "S": "#c:stones"
   },
   "pattern": [
     "SSS",

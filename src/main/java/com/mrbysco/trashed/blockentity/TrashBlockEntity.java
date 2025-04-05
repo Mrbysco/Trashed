@@ -14,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -197,7 +198,10 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	public static boolean hurtEntity(LivingEntity livingEnt) {
-		return livingEnt.hurt(Trashed.getTrashDamageSource(livingEnt), 1.0F);
+		if (livingEnt.level() instanceof ServerLevel serverLevel) {
+			return livingEnt.hurtServer(serverLevel, Trashed.getTrashDamageSource(livingEnt), 1.0F);
+		}
+		return false;
 	}
 
 	public static boolean captureItem(Container inv, ItemEntity itemEnt) {

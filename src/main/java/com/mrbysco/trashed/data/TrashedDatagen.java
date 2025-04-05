@@ -1,8 +1,18 @@
 package com.mrbysco.trashed.data;
 
 import com.mrbysco.trashed.Trashed;
+import com.mrbysco.trashed.block.TrashBlock;
+import com.mrbysco.trashed.block.TrashType;
 import com.mrbysco.trashed.init.TrashedDamageTypes;
 import com.mrbysco.trashed.init.TrashedRegistry;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.ModelProvider;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
+import net.minecraft.client.data.models.blockstates.Variant;
+import net.minecraft.client.data.models.blockstates.VariantProperties;
+import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.RegistrySetBuilder;
@@ -15,12 +25,13 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -39,20 +50,67 @@ import java.util.concurrent.CompletableFuture;
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class TrashedDatagen {
 	@SubscribeEvent
-	public static void gatherData(GatherDataEvent event) {
+	public static void gatherData(GatherDataEvent.Client event) {
 		DataGenerator generator = event.getGenerator();
 		PackOutput packOutput = generator.getPackOutput();
 		CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
-		if (event.includeServer()) {
-			generator.addProvider(event.includeServer(), new Loots(packOutput, lookupProvider));
-			generator.addProvider(event.includeServer(), new Recipes(packOutput, lookupProvider));
+		generator.addProvider(true, new TrashedLootProvider(packOutput, lookupProvider));
+		generator.addProvider(true, new TrashedRecipeProvider.Runner(packOutput, lookupProvider));
+		generator.addProvider(true, new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
 
-			generator.addProvider(true, new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
+		generator.addProvider(true, new TrashedLanguageProvider(packOutput));
+		generator.addProvider(true, new TrashedModelProvider(packOutput));
+	}
+
+	public static class TrashedModelProvider extends ModelProvider {
+		public TrashedModelProvider(PackOutput output) {
+			super(output, Trashed.MOD_ID);
 		}
 
-		if (event.includeClient()) {
-			generator.addProvider(event.includeClient(), new TrashedLanguageProvider(packOutput));
+		@Override
+		protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+			registerExtendedTrashCan(blockModels, TrashedRegistry.TRASH_CAN.get());
+			registerTrashCan(blockModels, TrashedRegistry.FLUID_TRASH_CAN.get());
+			registerTrashCan(blockModels, TrashedRegistry.ENERGY_TRASH_CAN.get());
+		}
+
+		private void registerExtendedTrashCan(BlockModelGenerators blockModels, TrashBlock block) {
+			ResourceLocation regular = ModelLocationUtils.getModelLocation(block);
+			ResourceLocation disabled = ModelLocationUtils.getModelLocation(block, "_disabled");
+
+			ResourceLocation bottom = ModelLocationUtils.getModelLocation(block, "_bottom");
+			ResourceLocation bottom_disabled = ModelLocationUtils.getModelLocation(block, "_bottom_disabled");
+			ResourceLocation top = ModelLocationUtils.getModelLocation(block, "_top");
+			ResourceLocation top_disabled = ModelLocationUtils.getModelLocation(block, "_top_disabled");
+
+			blockModels.registerSimpleItemModel(block, regular);
+			blockModels.blockStateOutput
+					.accept(
+							MultiVariantGenerator.multiVariant(block)
+									.with(
+											PropertyDispatch.properties(TrashBlock.TYPE, TrashBlock.ENABLED)
+													.select(TrashType.SINGLE, true, Variant.variant().with(VariantProperties.MODEL, regular))
+													.select(TrashType.SINGLE, false, Variant.variant().with(VariantProperties.MODEL, disabled))
+													.select(TrashType.BOTTOM, true, Variant.variant().with(VariantProperties.MODEL, bottom))
+													.select(TrashType.BOTTOM, false, Variant.variant().with(VariantProperties.MODEL, bottom_disabled))
+													.select(TrashType.TOP, true, Variant.variant().with(VariantProperties.MODEL, top))
+													.select(TrashType.TOP, false, Variant.variant().with(VariantProperties.MODEL, top_disabled))
+									)
+									.with(BlockModelGenerators.createHorizontalFacingDispatch())
+					);
+		}
+
+		private void registerTrashCan(BlockModelGenerators blockModels, Block block) {
+			ResourceLocation regular = ModelLocationUtils.getModelLocation(block);
+			ResourceLocation disabled = ModelLocationUtils.getModelLocation(block, "_disabled");
+			blockModels.registerSimpleItemModel(block, regular);
+			blockModels.blockStateOutput
+					.accept(
+							MultiVariantGenerator.multiVariant(block)
+									.with(BlockModelGenerators.createBooleanModelDispatch(BlockStateProperties.ENABLED, regular, disabled))
+									.with(BlockModelGenerators.createHorizontalFacingDispatch())
+					);
 		}
 	}
 
@@ -93,8 +151,8 @@ public class TrashedDatagen {
 		}
 	}
 
-	private static class Loots extends LootTableProvider {
-		public Loots(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+	private static class TrashedLootProvider extends LootTableProvider {
+		public TrashedLootProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
 			super(packOutput, Set.of(), List.of(new SubProviderEntry(Blocks::new, LootContextParamSets.BLOCK)), lookupProvider);
 		}
 
@@ -123,18 +181,55 @@ public class TrashedDatagen {
 		}
 	}
 
-	private static class Recipes extends RecipeProvider {
-		public Recipes(PackOutput packOutput, CompletableFuture<net.minecraft.core.HolderLookup.Provider> lookupProvider) {
-			super(packOutput, lookupProvider);
+	private static class TrashedRecipeProvider extends RecipeProvider {
+		public TrashedRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
+			super(provider, recipeOutput);
 		}
 
 		@Override
-		protected void buildRecipes(RecipeOutput recipeOutput) {
-			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.ENERGY_TRASH_CAN.get()).pattern("SSS").pattern("CRC").pattern("CCC").define('S', Tags.Items.STONES).define('C', Tags.Items.COBBLESTONES).define('R', Tags.Items.STORAGE_BLOCKS_REDSTONE).unlockedBy("has_stone", has(Tags.Items.STONES)).unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES)).unlockedBy("has_redstone_block", has(Tags.Items.STORAGE_BLOCKS_REDSTONE)).save(recipeOutput);
+		protected void buildRecipes() {
+			shaped(RecipeCategory.REDSTONE, TrashedRegistry.ENERGY_TRASH_CAN.get())
+					.pattern("SSS").pattern("CRC").pattern("CCC")
+					.define('S', Tags.Items.STONES)
+					.define('C', Tags.Items.COBBLESTONES)
+					.define('R', Tags.Items.STORAGE_BLOCKS_REDSTONE)
+					.unlockedBy("has_stone", has(Tags.Items.STONES))
+					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES))
+					.unlockedBy("has_redstone_block", has(Tags.Items.STORAGE_BLOCKS_REDSTONE)).save(this.output);
 
-			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.FLUID_TRASH_CAN.get()).pattern("SSS").pattern("CBC").pattern("CCC").define('S', Tags.Items.STONES).define('C', Tags.Items.COBBLESTONES).define('B', Tags.Items.BUCKETS_EMPTY).unlockedBy("has_stone", has(Tags.Items.STONES)).unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES)).unlockedBy("has_bucket", has(Tags.Items.BUCKETS_EMPTY)).save(recipeOutput);
+			shaped(RecipeCategory.REDSTONE, TrashedRegistry.FLUID_TRASH_CAN.get())
+					.pattern("SSS").pattern("CBC").pattern("CCC")
+					.define('S', Tags.Items.STONES)
+					.define('C', Tags.Items.COBBLESTONES)
+					.define('B', Tags.Items.BUCKETS_EMPTY)
+					.unlockedBy("has_stone", has(Tags.Items.STONES))
+					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES))
+					.unlockedBy("has_bucket", has(Tags.Items.BUCKETS_EMPTY)).save(this.output);
 
-			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.TRASH_CAN.get()).pattern("SSS").pattern("CHC").pattern("CCC").define('S', Tags.Items.STONES).define('C', Tags.Items.COBBLESTONES).define('H', Items.HOPPER).unlockedBy("has_stone", has(Tags.Items.STONES)).unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES)).unlockedBy("has_hopper", has(Items.HOPPER)).save(recipeOutput);
+			shaped(RecipeCategory.REDSTONE, TrashedRegistry.TRASH_CAN.get())
+					.pattern("SSS").pattern("CHC").pattern("CCC")
+					.define('S', Tags.Items.STONES)
+					.define('C', Tags.Items.COBBLESTONES)
+					.define('H', Items.HOPPER)
+					.unlockedBy("has_stone", has(Tags.Items.STONES))
+					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES))
+					.unlockedBy("has_hopper", has(Items.HOPPER)).save(this.output);
+		}
+
+		public static class Runner extends RecipeProvider.Runner {
+			public Runner(PackOutput output, CompletableFuture<Provider> completableFuture) {
+				super(output, completableFuture);
+			}
+
+			@Override
+			protected RecipeProvider createRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
+				return new TrashedRecipeProvider(provider, recipeOutput);
+			}
+
+			@Override
+			public String getName() {
+				return "Trashed Recipes";
+			}
 		}
 	}
 }

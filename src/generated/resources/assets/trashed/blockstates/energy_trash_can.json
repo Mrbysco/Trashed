@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "enabled=false,facing=east": {
+      "model": "trashed:block/energy_trash_can_disabled",
+      "y": 90
+    },
+    "enabled=false,facing=north": {
+      "model": "trashed:block/energy_trash_can_disabled"
+    },
+    "enabled=false,facing=south": {
+      "model": "trashed:block/energy_trash_can_disabled",
+      "y": 180
+    },
+    "enabled=false,facing=west": {
+      "model": "trashed:block/energy_trash_can_disabled",
+      "y": 270
+    },
+    "enabled=true,facing=east": {
+      "model": "trashed:block/energy_trash_can",
+      "y": 90
+    },
+    "enabled=true,facing=north": {
+      "model": "trashed:block/energy_trash_can"
+    },
+    "enabled=true,facing=south": {
+      "model": "trashed:block/energy_trash_can",
+      "y": 180
+    },
+    "enabled=true,facing=west": {
+      "model": "trashed:block/energy_trash_can",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "trashed:block/energy_trash_can"
+  }
+}
