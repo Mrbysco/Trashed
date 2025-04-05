@@ -9,7 +9,6 @@ import com.mrbysco.trashed.blockentity.FluidTrashBlockEntity;
 import com.mrbysco.trashed.blockentity.TrashBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;

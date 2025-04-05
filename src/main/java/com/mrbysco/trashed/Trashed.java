@@ -4,20 +4,19 @@ import com.mojang.logging.LogUtils;
 import com.mrbysco.trashed.config.TrashedConfig;
 import com.mrbysco.trashed.init.TrashedDamageTypes;
 import com.mrbysco.trashed.init.TrashedRegistry;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -41,6 +40,10 @@ public class Trashed {
 		TrashedRegistry.ITEMS.register(eventBus);
 		TrashedRegistry.BLOCKS.register(eventBus);
 		TrashedRegistry.BLOCK_ENTITY_TYPES.register(eventBus);
+
+		if (dist.isClient()) {
+			container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+		}
 	}
 
 	public static DamageSource getTrashDamageSource(Entity entity) {
