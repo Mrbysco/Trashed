@@ -39,6 +39,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
+//TODO: Add a filter system!
 public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	private NonNullList<ItemStack> trashContents = NonNullList.withSize(27, ItemStack.EMPTY);
 	private int deletionCooldown = -1;
