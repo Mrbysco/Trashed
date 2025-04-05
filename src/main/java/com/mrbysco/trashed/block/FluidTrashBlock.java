@@ -27,8 +27,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.fluids.FluidUtil;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock {
@@ -63,14 +63,10 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (state.getBlock() != newState.getBlock()) {
-			BlockEntity blockEntity = level.getBlockEntity(pos);
-			if (blockEntity instanceof FluidTrashBlockEntity) {
-				level.updateNeighbourForOutputSignal(pos, this);
-			}
-
-			super.onRemove(state, level, pos, newState, isMoving);
+	public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
+		super.playerDestroy(level, player, pos, state, blockEntity, stack);
+		if (blockEntity instanceof FluidTrashBlockEntity) {
+			level.updateNeighbourForOutputSignal(pos, this);
 		}
 	}
 
@@ -95,11 +91,6 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 	@Override
 	protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @org.jetbrains.annotations.Nullable Orientation orientation, boolean movedByPiston) {
 		this.updateState(level, pos, state);
-	}
-
-	@Override
-	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> components, TooltipFlag flag) {
-		super.appendHoverText(stack, context, components, flag);
 	}
 
 	@Nullable

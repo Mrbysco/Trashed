@@ -5,19 +5,16 @@ import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.blockentity.TrashBlockEntity;
 import com.mrbysco.trashed.blockentity.TrashSlaveBlockEntity;
 import com.mrbysco.trashed.init.TrashedRegistry;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -36,9 +33,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import javax.annotation.Nullable;
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	public static final MapCodec<TrashBlock> CODEC = simpleCodec(TrashBlock::new);
@@ -99,36 +94,34 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (!level.isClientSide && state.getBlock() != newState.getBlock()) {
-			BlockPos tePos = pos;
-			if (state.getValue(TYPE) == TrashType.BOTTOM) {
-				level.removeBlockEntity(pos.above());
-				level.setBlockAndUpdate(pos.above(), level.getBlockState(pos.above()).setValue(TYPE, TrashType.SINGLE));
-				BlockEntity tile = getTrashBlockEntity(level, state, pos);
-				BlockEntity tile2 = getTrashBlockEntity(level, state, pos.above());
-				if (tile instanceof TrashBlockEntity oldBE && tile2 instanceof TrashBlockEntity newBE) {
-					newBE.setItems(oldBE.getItems());
-				}
-				tePos = pos.above();
-			} else if (state.getValue(TYPE) == TrashType.TOP && !level.isEmptyBlock(pos.below())) {
-				level.setBlockAndUpdate(pos.below(), level.getBlockState(pos.below()).setValue(TYPE, TrashType.SINGLE));
-			}
+	public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
+		super.playerDestroy(level, player, pos, state, blockEntity, stack);
 
-			if (state.getValue(TYPE) == TrashType.SINGLE) {
-				BlockEntity tile = getTrashBlockEntity(level, state, tePos);
-				if (tile instanceof TrashBlockEntity) {
-					Containers.dropContents(level, tePos, (TrashBlockEntity) tile);
-					level.updateNeighbourForOutputSignal(getTrashPos(state, tePos), this);
-				}
+		BlockPos tePos = pos;
+		if (state.getValue(TYPE) == TrashType.BOTTOM) {
+			level.removeBlockEntity(pos.above());
+			level.setBlockAndUpdate(pos.above(), level.getBlockState(pos.above()).setValue(TYPE, TrashType.SINGLE));
+			BlockEntity tile = getTrashBlockEntity(level, state, pos);
+			BlockEntity tile2 = getTrashBlockEntity(level, state, pos.above());
+			if (tile instanceof TrashBlockEntity oldBE && tile2 instanceof TrashBlockEntity newBE) {
+				newBE.setItems(oldBE.getItems());
 			}
+			tePos = pos.above();
+		} else if (state.getValue(TYPE) == TrashType.TOP && !level.isEmptyBlock(pos.below())) {
+			level.setBlockAndUpdate(pos.below(), level.getBlockState(pos.below()).setValue(TYPE, TrashType.SINGLE));
+		}
 
-			super.onRemove(state, level, pos, newState, isMoving);
+		if (state.getValue(TYPE) == TrashType.SINGLE) {
+			BlockEntity tile = getTrashBlockEntity(level, state, tePos);
+			if (tile instanceof TrashBlockEntity) {
+				Containers.dropContents(level, tePos, (TrashBlockEntity) tile);
+				level.updateNeighbourForOutputSignal(getTrashPos(state, tePos), this);
+			}
 		}
 	}
 
 	@Override
-	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entityIn) {
+	protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entityIn, InsideBlockEffectApplier effectApplier) {
 		BlockEntity blockEntity = getTrashBlockEntity(level, state, pos);
 		if (blockEntity instanceof TrashBlockEntity) {
 			((TrashBlockEntity) blockEntity).onEntityCollision(entityIn);
@@ -201,12 +194,6 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> components, TooltipFlag flag) {
-		super.appendHoverText(stack, context, components, flag);
-		components.add(Component.translatable("trashed.trash_tooltip").withStyle(ChatFormatting.GOLD));
 	}
 
 	@Override

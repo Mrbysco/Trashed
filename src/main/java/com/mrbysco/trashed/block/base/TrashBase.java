@@ -3,7 +3,7 @@ package com.mrbysco.trashed.block.base;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -30,8 +30,7 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class TrashBase extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, EntityBlock {
 	protected static final VoxelShape BOTTOM_PLATE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 0.5D, 14.0D);
@@ -69,8 +68,8 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 	}
 
 	@Override
-	public boolean canPlaceLiquid(Player player, BlockGetter level, BlockPos pos, BlockState state, Fluid fluidIn) {
-		return SimpleWaterloggedBlock.super.canPlaceLiquid(player, level, pos, state, fluidIn);
+	public boolean canPlaceLiquid(@Nullable LivingEntity livingEntity, BlockGetter level, BlockPos pos, BlockState state, Fluid fluid) {
+		return SimpleWaterloggedBlock.super.canPlaceLiquid(livingEntity, level, pos, state, fluid);
 	}
 
 	@Override

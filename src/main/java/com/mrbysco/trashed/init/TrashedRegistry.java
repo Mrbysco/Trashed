@@ -7,6 +7,7 @@ import com.mrbysco.trashed.block.TrashBlock;
 import com.mrbysco.trashed.blockentity.EnergyTrashBlockEntity;
 import com.mrbysco.trashed.blockentity.FluidTrashBlockEntity;
 import com.mrbysco.trashed.blockentity.TrashBlockEntity;
+import com.mrbysco.trashed.iitem.TrashCanItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
@@ -27,7 +28,7 @@ public class TrashedRegistry {
 	public static final DeferredBlock<FluidTrashBlock> FLUID_TRASH_CAN = BLOCKS.registerBlock("fluid_trash_can", FluidTrashBlock::new, blockBuilder());
 	public static final DeferredBlock<EnergyTrashBlock> ENERGY_TRASH_CAN = BLOCKS.registerBlock("energy_trash_can", EnergyTrashBlock::new, blockBuilder());
 
-	public static final DeferredItem<BlockItem> TRASH_CAN_ITEM = ITEMS.registerSimpleBlockItem("trash_can", TRASH_CAN);
+	public static final DeferredItem<BlockItem> TRASH_CAN_ITEM = ITEMS.registerItem("trash_can", (properties) -> new TrashCanItem(TRASH_CAN.get(), properties));
 	public static final DeferredItem<BlockItem> FLUID_TRASH_CAN_ITEM = ITEMS.registerSimpleBlockItem("fluid_trash_can", FLUID_TRASH_CAN);
 	public static final DeferredItem<BlockItem> ENERGY_TRASH_CAN_ITEM = ITEMS.registerSimpleBlockItem("energy_trash_can", ENERGY_TRASH_CAN);
 

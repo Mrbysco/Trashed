@@ -10,9 +10,8 @@ import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
-import net.minecraft.client.data.models.blockstates.Variant;
-import net.minecraft.client.data.models.blockstates.VariantProperties;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
+import net.minecraft.client.renderer.block.model.VariantMutator;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.RegistrySetBuilder;
@@ -31,7 +30,6 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -87,17 +85,17 @@ public class TrashedDatagen {
 			blockModels.registerSimpleItemModel(block, regular);
 			blockModels.blockStateOutput
 					.accept(
-							MultiVariantGenerator.multiVariant(block)
+							MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(regular))
 									.with(
-											PropertyDispatch.properties(TrashBlock.TYPE, TrashBlock.ENABLED)
-													.select(TrashType.SINGLE, true, Variant.variant().with(VariantProperties.MODEL, regular))
-													.select(TrashType.SINGLE, false, Variant.variant().with(VariantProperties.MODEL, disabled))
-													.select(TrashType.BOTTOM, true, Variant.variant().with(VariantProperties.MODEL, bottom))
-													.select(TrashType.BOTTOM, false, Variant.variant().with(VariantProperties.MODEL, bottom_disabled))
-													.select(TrashType.TOP, true, Variant.variant().with(VariantProperties.MODEL, top))
-													.select(TrashType.TOP, false, Variant.variant().with(VariantProperties.MODEL, top_disabled))
+											PropertyDispatch.modify(TrashBlock.TYPE, TrashBlock.ENABLED)
+													.select(TrashType.SINGLE, true, VariantMutator.MODEL.withValue(regular))
+													.select(TrashType.SINGLE, false, VariantMutator.MODEL.withValue(disabled))
+													.select(TrashType.BOTTOM, true, VariantMutator.MODEL.withValue(bottom))
+													.select(TrashType.BOTTOM, false, VariantMutator.MODEL.withValue(bottom_disabled))
+													.select(TrashType.TOP, true, VariantMutator.MODEL.withValue(top))
+													.select(TrashType.TOP, false, VariantMutator.MODEL.withValue(top_disabled))
 									)
-									.with(BlockModelGenerators.createHorizontalFacingDispatch())
+									.with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING)
 					);
 		}
 
@@ -107,9 +105,11 @@ public class TrashedDatagen {
 			blockModels.registerSimpleItemModel(block, regular);
 			blockModels.blockStateOutput
 					.accept(
-							MultiVariantGenerator.multiVariant(block)
-									.with(BlockModelGenerators.createBooleanModelDispatch(BlockStateProperties.ENABLED, regular, disabled))
-									.with(BlockModelGenerators.createHorizontalFacingDispatch())
+							MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(regular))
+									.with(PropertyDispatch.modify(TrashBlock.ENABLED)
+											.select(true, VariantMutator.MODEL.withValue(regular))
+											.select(false, VariantMutator.MODEL.withValue(disabled)))
+									.with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING)
 					);
 		}
 	}

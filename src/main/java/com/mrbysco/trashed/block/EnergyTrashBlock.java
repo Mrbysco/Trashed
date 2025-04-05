@@ -5,10 +5,8 @@ import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.blockentity.EnergyTrashBlockEntity;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -19,9 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import javax.annotation.Nullable;
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	public static final MapCodec<EnergyTrashBlock> CODEC = simpleCodec(EnergyTrashBlock::new);
@@ -45,20 +41,11 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (state.getBlock() != newState.getBlock()) {
-			BlockEntity blockEntity = level.getBlockEntity(pos);
-			if (blockEntity instanceof EnergyTrashBlockEntity) {
-				level.updateNeighbourForOutputSignal(pos, this);
-			}
-
-			super.onRemove(state, level, pos, newState, isMoving);
+	public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
+		super.playerDestroy(level, player, pos, state, blockEntity, stack);
+		if (blockEntity instanceof EnergyTrashBlockEntity) {
+			level.updateNeighbourForOutputSignal(pos, this);
 		}
-	}
-
-	@Override
-	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> components, TooltipFlag flag) {
-		super.appendHoverText(stack, context, components, flag);
 	}
 
 	@Nullable

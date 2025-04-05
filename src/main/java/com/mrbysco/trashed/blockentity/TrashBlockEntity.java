@@ -36,8 +36,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 //TODO: Add a filter system!
@@ -302,8 +303,8 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 			ContainerHelper.loadAllItems(tag, this.trashContents, lookupProvider);
 		}
 
-		if (tag.contains("DeletionCooldown"))
-			this.deletionCooldown = tag.getInt("DeletionCooldown");
+		Optional<Integer> cooldown = tag.getInt("DeletionCooldown");
+		cooldown.ifPresent(integer -> this.deletionCooldown = integer);
 	}
 
 	@Override
