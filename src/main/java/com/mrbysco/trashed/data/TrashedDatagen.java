@@ -48,11 +48,11 @@ public class TrashedDatagen {
 			generator.addProvider(event.includeServer(), new Loots(packOutput, lookupProvider));
 			generator.addProvider(event.includeServer(), new Recipes(packOutput, lookupProvider));
 
-			generator.addProvider(true, new TrashedDatagenProvider(
-					packOutput,
-					event.getLookupProvider(),
-					Set.of(Trashed.MOD_ID)
-			));
+			generator.addProvider(true, new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
+		}
+
+		if (event.includeClient()) {
+			generator.addProvider(event.includeClient(), new TrashedLanguageProvider(packOutput));
 		}
 	}
 
@@ -84,10 +84,9 @@ public class TrashedDatagen {
 	}
 
 	public static class TrashedDatagenProvider extends DatapackBuiltinEntriesProvider {
-		public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
-				.add(Registries.DAMAGE_TYPE, context -> {
-					context.register(TrashedDamageTypes.TRASHED, new DamageType("trashed", 0.0F));
-				});
+		public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder().add(Registries.DAMAGE_TYPE, context -> {
+			context.register(TrashedDamageTypes.TRASHED, new DamageType("trashed", 0.0F));
+		});
 
 		public TrashedDatagenProvider(PackOutput output, CompletableFuture<Provider> registries, Set<String> modIds) {
 			super(output, registries, BUILDER, modIds);
@@ -96,9 +95,7 @@ public class TrashedDatagen {
 
 	private static class Loots extends LootTableProvider {
 		public Loots(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
-			super(packOutput, Set.of(), List.of(
-					new SubProviderEntry(Blocks::new, LootContextParamSets.BLOCK)
-			), lookupProvider);
+			super(packOutput, Set.of(), List.of(new SubProviderEntry(Blocks::new, LootContextParamSets.BLOCK)), lookupProvider);
 		}
 
 		@Override
@@ -133,41 +130,11 @@ public class TrashedDatagen {
 
 		@Override
 		protected void buildRecipes(RecipeOutput recipeOutput) {
-			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.ENERGY_TRASH_CAN.get())
-					.pattern("SSS")
-					.pattern("CRC")
-					.pattern("CCC")
-					.define('S', Tags.Items.STONES)
-					.define('C', Tags.Items.COBBLESTONES)
-					.define('R', Tags.Items.STORAGE_BLOCKS_REDSTONE)
-					.unlockedBy("has_stone", has(Tags.Items.STONES))
-					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES))
-					.unlockedBy("has_redstone_block", has(Tags.Items.STORAGE_BLOCKS_REDSTONE))
-					.save(recipeOutput);
+			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.ENERGY_TRASH_CAN.get()).pattern("SSS").pattern("CRC").pattern("CCC").define('S', Tags.Items.STONES).define('C', Tags.Items.COBBLESTONES).define('R', Tags.Items.STORAGE_BLOCKS_REDSTONE).unlockedBy("has_stone", has(Tags.Items.STONES)).unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES)).unlockedBy("has_redstone_block", has(Tags.Items.STORAGE_BLOCKS_REDSTONE)).save(recipeOutput);
 
-			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.FLUID_TRASH_CAN.get())
-					.pattern("SSS")
-					.pattern("CBC")
-					.pattern("CCC")
-					.define('S', Tags.Items.STONES)
-					.define('C', Tags.Items.COBBLESTONES)
-					.define('B', Tags.Items.BUCKETS_EMPTY)
-					.unlockedBy("has_stone", has(Tags.Items.STONES))
-					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES))
-					.unlockedBy("has_bucket", has(Tags.Items.BUCKETS_EMPTY))
-					.save(recipeOutput);
+			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.FLUID_TRASH_CAN.get()).pattern("SSS").pattern("CBC").pattern("CCC").define('S', Tags.Items.STONES).define('C', Tags.Items.COBBLESTONES).define('B', Tags.Items.BUCKETS_EMPTY).unlockedBy("has_stone", has(Tags.Items.STONES)).unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES)).unlockedBy("has_bucket", has(Tags.Items.BUCKETS_EMPTY)).save(recipeOutput);
 
-			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.TRASH_CAN.get())
-					.pattern("SSS")
-					.pattern("CHC")
-					.pattern("CCC")
-					.define('S', Tags.Items.STONES)
-					.define('C', Tags.Items.COBBLESTONES)
-					.define('H', Items.HOPPER)
-					.unlockedBy("has_stone", has(Tags.Items.STONES))
-					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES))
-					.unlockedBy("has_hopper", has(Items.HOPPER))
-					.save(recipeOutput);
+			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.TRASH_CAN.get()).pattern("SSS").pattern("CHC").pattern("CCC").define('S', Tags.Items.STONES).define('C', Tags.Items.COBBLESTONES).define('H', Items.HOPPER).unlockedBy("has_stone", has(Tags.Items.STONES)).unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES)).unlockedBy("has_hopper", has(Items.HOPPER)).save(recipeOutput);
 		}
 	}
 }
