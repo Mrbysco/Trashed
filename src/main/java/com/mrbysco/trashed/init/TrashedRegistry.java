@@ -11,8 +11,8 @@ import com.mrbysco.trashed.iitem.TrashCanItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -38,6 +38,6 @@ public class TrashedRegistry {
 	public static final Supplier<BlockEntityType<EnergyTrashBlockEntity>> ENERGY_TRASH_TILE = BLOCK_ENTITY_TYPES.register("energy_trash_can", () -> new BlockEntityType<>(EnergyTrashBlockEntity::new, ENERGY_TRASH_CAN.get()));
 
 	private static Block.Properties blockBuilder() {
-		return Block.Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F);
+		return Block.Properties.of().mapColor(MapColor.STONE).strength(2.0F, 6.0F);
 	}
 }
