@@ -16,6 +16,7 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.flag.FeatureFlags;
@@ -27,7 +28,9 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.jetbrains.annotations.Nullable;
@@ -47,8 +50,8 @@ public class TrashedDatagen {
 		if (event.includeServer()) {
 			generator.addProvider(event.includeServer(), new Loots(packOutput, lookupProvider));
 			generator.addProvider(event.includeServer(), new Recipes(packOutput, lookupProvider));
-
-			generator.addProvider(true, new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
+			generator.addProvider(event.includeServer(), new TrashedBlockTags(packOutput, lookupProvider, event.getExistingFileHelper()));
+			generator.addProvider(event.includeServer(), new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
 		}
 
 		if (event.includeClient()) {
@@ -135,6 +138,21 @@ public class TrashedDatagen {
 			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.FLUID_TRASH_CAN.get()).pattern("SSS").pattern("CBC").pattern("CCC").define('S', Tags.Items.STONES).define('C', Tags.Items.COBBLESTONES).define('B', Tags.Items.BUCKETS_EMPTY).unlockedBy("has_stone", has(Tags.Items.STONES)).unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES)).unlockedBy("has_bucket", has(Tags.Items.BUCKETS_EMPTY)).save(recipeOutput);
 
 			ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, TrashedRegistry.TRASH_CAN.get()).pattern("SSS").pattern("CHC").pattern("CCC").define('S', Tags.Items.STONES).define('C', Tags.Items.COBBLESTONES).define('H', Items.HOPPER).unlockedBy("has_stone", has(Tags.Items.STONES)).unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES)).unlockedBy("has_hopper", has(Items.HOPPER)).save(recipeOutput);
+		}
+	}
+
+	public static class TrashedBlockTags extends BlockTagsProvider {
+		public TrashedBlockTags(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper fileHelper) {
+			super(packOutput, lookupProvider, Trashed.MOD_ID, fileHelper);
+		}
+
+		@Override
+		protected void addTags(Provider provider) {
+			this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
+					TrashedRegistry.TRASH_CAN.get(),
+					TrashedRegistry.FLUID_TRASH_CAN.get(),
+					TrashedRegistry.ENERGY_TRASH_CAN.get()
+			);
 		}
 	}
 }
