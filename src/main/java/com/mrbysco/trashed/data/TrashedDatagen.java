@@ -25,6 +25,7 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.flag.FeatureFlags;
@@ -36,6 +37,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -55,6 +57,8 @@ public class TrashedDatagen {
 
 		generator.addProvider(true, new TrashedLootProvider(packOutput, lookupProvider));
 		generator.addProvider(true, new TrashedRecipeProvider.Runner(packOutput, lookupProvider));
+		BlockTagsProvider blockTagsProvider;
+		generator.addProvider(true, new TrashedBlockTags(packOutput, lookupProvider));
 		generator.addProvider(true, new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
 
 		generator.addProvider(true, new TrashedLanguageProvider(packOutput));
@@ -230,6 +234,21 @@ public class TrashedDatagen {
 			public String getName() {
 				return "Trashed Recipes";
 			}
+		}
+	}
+
+	public static class TrashedBlockTags extends BlockTagsProvider {
+		public TrashedBlockTags(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+			super(packOutput, lookupProvider, Trashed.MOD_ID);
+		}
+
+		@Override
+		protected void addTags(Provider provider) {
+			this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
+					TrashedRegistry.TRASH_CAN.get(),
+					TrashedRegistry.FLUID_TRASH_CAN.get(),
+					TrashedRegistry.ENERGY_TRASH_CAN.get()
+			);
 		}
 	}
 }
