@@ -1,1 +1,1 @@
-* Enable in-game config
+* Fix not being able to break the trash cans to get the trash can item back
