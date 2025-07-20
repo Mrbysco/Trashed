@@ -1,1 +1,1 @@
-* Fix not being able to break the trash cans to get the trash can item back
+* Update to 1.21.6
