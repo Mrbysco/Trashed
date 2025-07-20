@@ -1,16 +1,20 @@
 package com.mrbysco.trashed.blockentity;
 
+import com.mrbysco.trashed.Trashed;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
@@ -25,13 +29,13 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-		super.loadAdditional(tag, lookupProvider);
+	protected void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-		super.saveAdditional(tag, lookupProvider);
+	protected void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
 	}
 
 	@Override
@@ -40,30 +44,27 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
-		if (pkt.getTag() != null)
-			loadAdditional(pkt.getTag(), lookupProvider);
-	}
-
-	@Override
 	public CompoundTag getUpdateTag(HolderLookup.Provider lookupProvider) {
 		CompoundTag tag = new CompoundTag();
-		this.saveAdditional(tag, lookupProvider);
+		try (ProblemReporter.ScopedCollector problemreporter$scopedcollector = new ProblemReporter.ScopedCollector(Trashed.LOGGER)) {
+			TagValueOutput output = TagValueOutput.createWithContext(problemreporter$scopedcollector, lookupProvider);
+			this.saveAdditional(output);
+			tag.merge(output.buildResult());
+		}
 		return tag;
 	}
 
 	@Override
-	public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-		this.loadAdditional(tag, lookupProvider);
-	}
-
-	@Override
 	public CompoundTag getPersistentData() {
-		CompoundTag nbt = new CompoundTag();
-		this.saveAdditional(nbt, this.level != null ? this.level.registryAccess() : VanillaRegistries.createLookup());
-		return nbt;
+		CompoundTag tag = new CompoundTag();
+		try (ProblemReporter.ScopedCollector problemreporter$scopedcollector = new ProblemReporter.ScopedCollector(Trashed.LOGGER)) {
+			HolderLookup.Provider lookupProvider = this.level != null ? this.level.registryAccess() : VanillaRegistries.createLookup();
+			TagValueOutput output = TagValueOutput.createWithContext(problemreporter$scopedcollector, lookupProvider);
+			this.saveAdditional(output);
+			tag.merge(output.buildResult());
+		}
+		return tag;
 	}
-
 
 	public static void serverTick(Level level, BlockPos pos, BlockState state, EnergyTrashBlockEntity trashBlockEntity) {
 		if (level != null) {

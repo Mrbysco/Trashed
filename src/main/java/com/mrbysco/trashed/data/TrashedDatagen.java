@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber
 public class TrashedDatagen {
 	@SubscribeEvent
 	public static void gatherData(GatherDataEvent.Client event) {

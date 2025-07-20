@@ -11,12 +11,12 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
@@ -33,6 +33,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -296,25 +299,25 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	@Override
-	public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-		super.loadAdditional(tag, lookupProvider);
+	protected void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
 		this.trashContents = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-		if (!this.tryLoadLootTable(tag)) {
-			ContainerHelper.loadAllItems(tag, this.trashContents, lookupProvider);
+		if (!this.tryLoadLootTable(input)) {
+			ContainerHelper.loadAllItems(input, this.trashContents);
 		}
 
-		Optional<Integer> cooldown = tag.getInt("DeletionCooldown");
+		Optional<Integer> cooldown = input.getInt("DeletionCooldown");
 		cooldown.ifPresent(integer -> this.deletionCooldown = integer);
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-		super.saveAdditional(tag, lookupProvider);
-		if (!this.trySaveLootTable(tag)) {
-			ContainerHelper.saveAllItems(tag, this.trashContents, lookupProvider);
+	protected void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
+		if (!this.trySaveLootTable(output)) {
+			ContainerHelper.saveAllItems(output, this.trashContents);
 		}
 
-		tag.putInt("DeletionCooldown", this.deletionCooldown);
+		output.putInt("DeletionCooldown", this.deletionCooldown);
 	}
 
 	@Override
@@ -323,28 +326,26 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
-		if (pkt.getTag() != null)
-			loadAdditional(pkt.getTag(), lookupProvider);
-	}
-
-	@Override
 	public CompoundTag getUpdateTag(HolderLookup.Provider lookupProvider) {
 		CompoundTag tag = new CompoundTag();
-		this.saveAdditional(tag, lookupProvider);
+		try (ProblemReporter.ScopedCollector problemreporter$scopedcollector = new ProblemReporter.ScopedCollector(Trashed.LOGGER)) {
+			TagValueOutput output = TagValueOutput.createWithContext(problemreporter$scopedcollector, lookupProvider);
+			this.saveAdditional(output);
+			tag.merge(output.buildResult());
+		}
 		return tag;
 	}
 
 	@Override
-	public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-		this.loadAdditional(tag, lookupProvider);
-	}
-
-	@Override
 	public CompoundTag getPersistentData() {
-		CompoundTag nbt = new CompoundTag();
-		this.saveAdditional(nbt, this.level != null ? this.level.registryAccess() : VanillaRegistries.createLookup());
-		return nbt;
+		CompoundTag tag = new CompoundTag();
+		try (ProblemReporter.ScopedCollector problemreporter$scopedcollector = new ProblemReporter.ScopedCollector(Trashed.LOGGER)) {
+			HolderLookup.Provider lookupProvider = this.level != null ? this.level.registryAccess() : VanillaRegistries.createLookup();
+			TagValueOutput output = TagValueOutput.createWithContext(problemreporter$scopedcollector, lookupProvider);
+			this.saveAdditional(output);
+			tag.merge(output.buildResult());
+		}
+		return tag;
 	}
 
 	public void setDeletionCooldown(int ticks) {

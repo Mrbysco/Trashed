@@ -7,7 +7,7 @@ import com.mrbysco.trashed.block.TrashBlock;
 import com.mrbysco.trashed.blockentity.EnergyTrashBlockEntity;
 import com.mrbysco.trashed.blockentity.FluidTrashBlockEntity;
 import com.mrbysco.trashed.blockentity.TrashBlockEntity;
-import com.mrbysco.trashed.iitem.TrashCanItem;
+import com.mrbysco.trashed.item.TrashCanItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;

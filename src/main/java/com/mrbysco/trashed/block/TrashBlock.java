@@ -97,7 +97,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
 		super.playerDestroy(level, player, pos, state, blockEntity, stack);
 
-		BlockPos tePos = pos;
+		BlockPos bePos = pos;
 		if (state.getValue(TYPE) == TrashType.BOTTOM) {
 			level.removeBlockEntity(pos.above());
 			level.setBlockAndUpdate(pos.above(), level.getBlockState(pos.above()).setValue(TYPE, TrashType.SINGLE));
@@ -106,16 +106,16 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 			if (tile instanceof TrashBlockEntity oldBE && tile2 instanceof TrashBlockEntity newBE) {
 				newBE.setItems(oldBE.getItems());
 			}
-			tePos = pos.above();
+			bePos = pos.above();
 		} else if (state.getValue(TYPE) == TrashType.TOP && !level.isEmptyBlock(pos.below())) {
 			level.setBlockAndUpdate(pos.below(), level.getBlockState(pos.below()).setValue(TYPE, TrashType.SINGLE));
 		}
 
 		if (state.getValue(TYPE) == TrashType.SINGLE) {
-			BlockEntity tile = getTrashBlockEntity(level, state, tePos);
+			BlockEntity tile = getTrashBlockEntity(level, state, bePos);
 			if (tile instanceof TrashBlockEntity) {
-				Containers.dropContents(level, tePos, (TrashBlockEntity) tile);
-				level.updateNeighbourForOutputSignal(getTrashPos(state, tePos), this);
+				Containers.dropContents(level, bePos, (TrashBlockEntity) tile);
+				level.updateNeighbourForOutputSignal(getTrashPos(state, bePos), this);
 			}
 		}
 	}

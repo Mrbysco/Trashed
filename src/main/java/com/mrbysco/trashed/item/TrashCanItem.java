@@ -1,4 +1,4 @@
-package com.mrbysco.trashed.iitem;
+package com.mrbysco.trashed.item;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
