@@ -83,9 +83,9 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 			if (stack.getItem() == TrashedRegistry.TRASH_CAN_ITEM.get() && result.getDirection().equals(Direction.UP)) {
 				return InteractionResult.FAIL;
 			} else {
-				BlockEntity tile = getTrashBlockEntity(level, state, pos);
-				if (tile instanceof TrashBlockEntity) {
-					player.openMenu((TrashBlockEntity) tile, pos);
+				BlockEntity blockEntity = getTrashBlockEntity(level, state, pos);
+				if (blockEntity instanceof TrashBlockEntity) {
+					player.openMenu((TrashBlockEntity) blockEntity, pos);
 				}
 				return InteractionResult.SUCCESS;
 			}
@@ -101,9 +101,9 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 		if (state.getValue(TYPE) == TrashType.BOTTOM) {
 			level.removeBlockEntity(pos.above());
 			level.setBlockAndUpdate(pos.above(), level.getBlockState(pos.above()).setValue(TYPE, TrashType.SINGLE));
-			BlockEntity tile = getTrashBlockEntity(level, state, pos);
-			BlockEntity tile2 = getTrashBlockEntity(level, state, pos.above());
-			if (tile instanceof TrashBlockEntity oldBE && tile2 instanceof TrashBlockEntity newBE) {
+			BlockEntity be = getTrashBlockEntity(level, state, pos);
+			BlockEntity be2 = getTrashBlockEntity(level, state, pos.above());
+			if (be instanceof TrashBlockEntity oldBE && be2 instanceof TrashBlockEntity newBE) {
 				newBE.setItems(oldBE.getItems());
 			}
 			bePos = pos.above();
@@ -112,9 +112,9 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 		}
 
 		if (state.getValue(TYPE) == TrashType.SINGLE) {
-			BlockEntity tile = getTrashBlockEntity(level, state, bePos);
-			if (tile instanceof TrashBlockEntity) {
-				Containers.dropContents(level, bePos, (TrashBlockEntity) tile);
+			BlockEntity trashBE = getTrashBlockEntity(level, state, bePos);
+			if (trashBE instanceof TrashBlockEntity) {
+				Containers.dropContents(level, bePos, (TrashBlockEntity) trashBE);
 				level.updateNeighbourForOutputSignal(getTrashPos(state, bePos), this);
 			}
 		}

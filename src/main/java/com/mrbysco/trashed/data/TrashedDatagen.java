@@ -57,7 +57,6 @@ public class TrashedDatagen {
 
 		generator.addProvider(true, new TrashedLootProvider(packOutput, lookupProvider));
 		generator.addProvider(true, new TrashedRecipeProvider.Runner(packOutput, lookupProvider));
-		BlockTagsProvider blockTagsProvider;
 		generator.addProvider(true, new TrashedBlockTags(packOutput, lookupProvider));
 		generator.addProvider(true, new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
 
