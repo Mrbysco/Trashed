@@ -15,11 +15,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public class FluidTrashBlockEntity extends BlockEntity {
+	private final FluidStacksResourceHandler handler = new FluidStacksResourceHandler(1, 1000000);
 
 	protected FluidTrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
 		super(entityType, pos, state);
@@ -69,17 +70,18 @@ public class FluidTrashBlockEntity extends BlockEntity {
 
 	public static void serverTick(Level level, BlockPos pos, BlockState state, FluidTrashBlockEntity trashBlockEntity) {
 		if (level != null) {
-			FluidTank handler = trashBlockEntity.getStorage();
-			if (handler != null && !handler.isEmpty()) {
-				handler.drain(handler.getFluidAmount(), FluidAction.EXECUTE);
+			FluidStacksResourceHandler handler = trashBlockEntity.getStorage();
+			FluidResource fluidResource = handler.getResource(0);
+			if (handler != null && !fluidResource.isEmpty()) {
+				try (Transaction tx = Transaction.openRoot()) {
+					handler.extract(0, fluidResource, handler.getAmountAsInt(0), tx);
+					tx.commit();
+				}
 			}
 		}
 	}
 
-	private FluidTank getStorage() {
-		if (level != null && level.getCapability(Capabilities.FluidHandler.BLOCK, getBlockPos(), null) instanceof FluidTank tank) {
-			return tank;
-		}
-		return null;
+	public FluidStacksResourceHandler getStorage() {
+		return handler;
 	}
 }

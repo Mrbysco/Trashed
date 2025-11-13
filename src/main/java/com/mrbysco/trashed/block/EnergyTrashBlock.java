@@ -62,6 +62,6 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	@Nullable
 	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> blockEntityTicker,
 																					BlockEntityType<? extends EnergyTrashBlockEntity> entityType) {
-		return level.isClientSide ? null : createTickerHelper(blockEntityTicker, entityType, EnergyTrashBlockEntity::serverTick);
+		return level.isClientSide() ? null : createTickerHelper(blockEntityTicker, entityType, EnergyTrashBlockEntity::serverTick);
 	}
 }

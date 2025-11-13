@@ -6,13 +6,10 @@ import com.mrbysco.trashed.blockentity.FluidTrashBlockEntity;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -26,10 +23,8 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	public static final MapCodec<FluidTrashBlock> CODEC = simpleCodec(FluidTrashBlock::new);
@@ -56,7 +51,7 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 	@Override
 	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
 	                                      InteractionHand hand, BlockHitResult result) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			FluidUtil.interactWithFluidHandler(player, hand, level, pos, result.getDirection());
 		}
 		return super.useItemOn(stack, state, level, pos, player, hand, result);
@@ -106,6 +101,6 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 
 	@Nullable
 	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> p_151989_, BlockEntityType<? extends FluidTrashBlockEntity> p_151990_) {
-		return level.isClientSide ? null : createTickerHelper(p_151989_, p_151990_, FluidTrashBlockEntity::serverTick);
+		return level.isClientSide() ? null : createTickerHelper(p_151989_, p_151990_, FluidTrashBlockEntity::serverTick);
 	}
 }

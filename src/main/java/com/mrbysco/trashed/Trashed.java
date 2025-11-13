@@ -17,10 +17,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -51,14 +49,14 @@ public class Trashed {
 	}
 
 	private void registerCapabilities(final RegisterCapabilitiesEvent event) {
-		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, TrashedRegistry.ENERGY_TRASH_TILE.get(), (trashBlockEntity, side) ->
-				new EnergyStorage(1000000)
+		event.registerBlockEntity(Capabilities.Energy.BLOCK, TrashedRegistry.ENERGY_TRASH_TILE.get(), (trashBlockEntity, side) ->
+				trashBlockEntity.getStorage()
 		);
-		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, TrashedRegistry.FLUID_TRASH_TILE.get(), (trashBlockEntity, side) ->
-				new FluidTank(1000000)
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, TrashedRegistry.FLUID_TRASH_TILE.get(), (trashBlockEntity, side) ->
+				trashBlockEntity.getStorage()
 		);
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, TrashedRegistry.TRASH_TILE.get(), (trashBlockEntity, side) ->
-				new InvWrapper(trashBlockEntity)
+		event.registerBlockEntity(Capabilities.Item.BLOCK, TrashedRegistry.TRASH_TILE.get(), (trashBlockEntity, side) ->
+				VanillaContainerWrapper.of(trashBlockEntity)
 		);
 	}
 

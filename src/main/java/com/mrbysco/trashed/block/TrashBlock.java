@@ -79,7 +79,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	@Override
 	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
 	                                      InteractionHand hand, BlockHitResult result) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			if (stack.getItem() == TrashedRegistry.TRASH_CAN_ITEM.get() && result.getDirection().equals(Direction.UP)) {
 				return InteractionResult.FAIL;
 			} else {
@@ -121,10 +121,10 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entityIn, InsideBlockEffectApplier effectApplier) {
+	protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier applier, boolean intersects) {
 		BlockEntity blockEntity = getTrashBlockEntity(level, state, pos);
 		if (blockEntity instanceof TrashBlockEntity) {
-			((TrashBlockEntity) blockEntity).onEntityCollision(entityIn);
+			((TrashBlockEntity) blockEntity).onEntityCollision(entity);
 		}
 	}
 
@@ -173,7 +173,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+	protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
 		return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(getTrashBlockEntity(level, state, pos));
 	}
 
@@ -231,6 +231,6 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 
 	@Nullable
 	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> p_151989_, BlockEntityType<? extends TrashBlockEntity> p_151990_) {
-		return level.isClientSide ? null : createTickerHelper(p_151989_, p_151990_, TrashBlockEntity::serverTick);
+		return level.isClientSide() ? null : createTickerHelper(p_151989_, p_151990_, TrashBlockEntity::serverTick);
 	}
 }

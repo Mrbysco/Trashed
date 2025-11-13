@@ -20,6 +20,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -151,7 +152,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	private void updateTrash(Supplier<Boolean> p_200109_1_) {
-		if (this.level != null && !this.level.isClientSide) {
+		if (this.level != null && !this.level.isClientSide()) {
 			if (!this.isOnDeletionCooldown() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED)) {
 				boolean flag = false;
 
@@ -168,7 +169,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	private void updatePickupTrash(Supplier<Boolean> p_200109_1_) {
-		if (this.level != null && !this.level.isClientSide) {
+		if (this.level != null && !this.level.isClientSide()) {
 			if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED)) {
 				boolean flag = false;
 
@@ -185,7 +186,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	private void updateHurtEntity(Supplier<Boolean> p_200109_1_) {
-		if (this.level != null && !this.level.isClientSide) {
+		if (this.level != null && !this.level.isClientSide()) {
 			if (!this.isFull() && this.getBlockState().getBlock() instanceof TrashBlock && this.getBlockState().getValue(TrashBlock.ENABLED) && this.getBlockState().getValue(TrashBlock.TYPE) == TrashType.BOTTOM) {
 				boolean flag = false;
 
@@ -361,11 +362,11 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	}
 
 	@Override
-	public void startOpen(Player player) {
+	public void startOpen(ContainerUser user) {
 		if (level != null) {
-			level.playSound(player, this.getBlockPos(), SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 1.0F, 1.0F);
+			level.playSound(user.getLivingEntity(), this.getBlockPos(), SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 1.0F, 1.0F);
 		}
-		super.startOpen(player);
+		super.startOpen(user);
 	}
 
 	public VoxelShape getCollectionArea() {

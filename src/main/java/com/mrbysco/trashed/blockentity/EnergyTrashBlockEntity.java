@@ -15,10 +15,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public class EnergyTrashBlockEntity extends BlockEntity {
+	private final SimpleEnergyHandler handler = new SimpleEnergyHandler(1000000);
 
 	protected EnergyTrashBlockEntity(BlockEntityType<?> entityType, BlockPos pos, BlockState state) {
 		super(entityType, pos, state);
@@ -69,21 +71,24 @@ public class EnergyTrashBlockEntity extends BlockEntity {
 	public static void serverTick(Level level, BlockPos pos, BlockState state, EnergyTrashBlockEntity trashBlockEntity) {
 		if (level != null) {
 			if (!trashBlockEntity.isEmpty()) {
-				IEnergyStorage energyStorage = trashBlockEntity.getStorage();
-				if (energyStorage != null)
-					energyStorage.receiveEnergy(energyStorage.getEnergyStored(), false);
+				EnergyHandler energyStorage = trashBlockEntity.getStorage();
+				if (energyStorage != null) {
+					try (Transaction tx = Transaction.openRoot()) {
+						energyStorage.extract(energyStorage.getAmountAsInt(), tx);
+						tx.commit();
+					}
+				}
 			}
 		}
 	}
 
 	public boolean isEmpty() {
-		IEnergyStorage energyStorage = getStorage();
+		EnergyHandler energyStorage = getStorage();
 		if (energyStorage == null) return false;
-		return energyStorage.getEnergyStored() < 1;
+		return energyStorage.getAmountAsInt() < 1;
 	}
 
-	private IEnergyStorage getStorage() {
-		if (level == null) return null;
-		return level.getCapability(Capabilities.EnergyStorage.BLOCK, getBlockPos(), null);
+	public EnergyHandler getStorage() {
+		return handler;
 	}
 }
