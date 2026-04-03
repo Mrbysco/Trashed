@@ -24,9 +24,9 @@ public class TrashedRegistry {
 	public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Trashed.MOD_ID);
 	public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Trashed.MOD_ID);
 
-	public static final DeferredBlock<TrashBlock> TRASH_CAN = BLOCKS.registerBlock("trash_can", TrashBlock::new, () -> blockBuilder());
-	public static final DeferredBlock<FluidTrashBlock> FLUID_TRASH_CAN = BLOCKS.registerBlock("fluid_trash_can", FluidTrashBlock::new, () -> blockBuilder());
-	public static final DeferredBlock<EnergyTrashBlock> ENERGY_TRASH_CAN = BLOCKS.registerBlock("energy_trash_can", EnergyTrashBlock::new, () -> blockBuilder());
+	public static final DeferredBlock<TrashBlock> TRASH_CAN = BLOCKS.registerBlock("trash_can", TrashBlock::new);
+	public static final DeferredBlock<FluidTrashBlock> FLUID_TRASH_CAN = BLOCKS.registerBlock("fluid_trash_can", FluidTrashBlock::new);
+	public static final DeferredBlock<EnergyTrashBlock> ENERGY_TRASH_CAN = BLOCKS.registerBlock("energy_trash_can", EnergyTrashBlock::new);
 
 	public static final DeferredItem<BlockItem> TRASH_CAN_ITEM = ITEMS.registerItem("trash_can", (properties) -> new TrashCanItem(TRASH_CAN.get(), properties));
 	public static final DeferredItem<BlockItem> FLUID_TRASH_CAN_ITEM = ITEMS.registerSimpleBlockItem("fluid_trash_can", FLUID_TRASH_CAN);

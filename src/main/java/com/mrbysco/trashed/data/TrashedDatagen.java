@@ -24,7 +24,7 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.damagesource.DamageType;
@@ -77,13 +77,13 @@ public class TrashedDatagen {
 		}
 
 		private void registerExtendedTrashCan(BlockModelGenerators blockModels, TrashBlock block) {
-			ResourceLocation regular = ModelLocationUtils.getModelLocation(block);
-			ResourceLocation disabled = ModelLocationUtils.getModelLocation(block, "_disabled");
+			Identifier regular = ModelLocationUtils.getModelLocation(block);
+			Identifier disabled = ModelLocationUtils.getModelLocation(block, "_disabled");
 
-			ResourceLocation bottom = ModelLocationUtils.getModelLocation(block, "_bottom");
-			ResourceLocation bottom_disabled = ModelLocationUtils.getModelLocation(block, "_bottom_disabled");
-			ResourceLocation top = ModelLocationUtils.getModelLocation(block, "_top");
-			ResourceLocation top_disabled = ModelLocationUtils.getModelLocation(block, "_top_disabled");
+			Identifier bottom = ModelLocationUtils.getModelLocation(block, "_bottom");
+			Identifier bottom_disabled = ModelLocationUtils.getModelLocation(block, "_bottom_disabled");
+			Identifier top = ModelLocationUtils.getModelLocation(block, "_top");
+			Identifier top_disabled = ModelLocationUtils.getModelLocation(block, "_top_disabled");
 
 			blockModels.registerSimpleItemModel(block, regular);
 			blockModels.blockStateOutput
@@ -103,8 +103,8 @@ public class TrashedDatagen {
 		}
 
 		private void registerTrashCan(BlockModelGenerators blockModels, Block block) {
-			ResourceLocation regular = ModelLocationUtils.getModelLocation(block);
-			ResourceLocation disabled = ModelLocationUtils.getModelLocation(block, "_disabled");
+			Identifier regular = ModelLocationUtils.getModelLocation(block);
+			Identifier disabled = ModelLocationUtils.getModelLocation(block, "_disabled");
 			blockModels.registerSimpleItemModel(block, regular);
 			blockModels.blockStateOutput
 					.accept(
