@@ -1,7 +1,7 @@
-// 1.21.11	2026-04-04T01:07:29.1098517	Trashed Recipes
+// 26.1.1	2026-04-04T01:11:37.5149213	Trashed Recipes
 552a08b7260259bf9a01193f271b0be945dd3b8c data/trashed/advancement/recipes/redstone/energy_trash_can.json
 22271eeb914ddec2143b4f5121e8d8c41572b9f8 data/trashed/advancement/recipes/redstone/fluid_trash_can.json
 363f1da6919bcfa1f08157a70d42b0d3c601444a data/trashed/advancement/recipes/redstone/trash_can.json
-b196d9eea74abead6003e704762a5bbbef607d83 data/trashed/recipe/energy_trash_can.json
-ce7cffed630feed4b2f42878b7ac2dec3c8ac845 data/trashed/recipe/fluid_trash_can.json
-860a26689afac85ee10a4593d1e0b1e0d380f655 data/trashed/recipe/trash_can.json
+1d929e0aabcc5227f5491dbbf0fe8a48f4645694 data/trashed/recipe/energy_trash_can.json
+8145c4453f6dd37f2b2809da01a3b79c49f6d13f data/trashed/recipe/fluid_trash_can.json
+059545a3bd0ac7509b73992878f2670bc95c11b3 data/trashed/recipe/trash_can.json
