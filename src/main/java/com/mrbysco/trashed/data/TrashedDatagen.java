@@ -23,9 +23,11 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Items;
@@ -55,7 +57,8 @@ public class TrashedDatagen {
 		generator.addProvider(true, new TrashedLootProvider(packOutput, lookupProvider));
 		generator.addProvider(true, new TrashedRecipeProvider.Runner(packOutput, lookupProvider));
 		generator.addProvider(true, new TrashedBlockTags(packOutput, lookupProvider));
-		generator.addProvider(true, new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
+		lookupProvider = generator.addProvider(true, new TrashedDatagenProvider(packOutput, lookupProvider, Set.of(Trashed.MOD_ID))).getRegistryProvider();
+		generator.addProvider(true, new TrashedDamageTypeTags(packOutput, lookupProvider));
 
 		generator.addProvider(true, new TrashedLanguageProvider(packOutput));
 		generator.addProvider(true, new TrashedModelProvider(packOutput));
@@ -239,6 +242,42 @@ public class TrashedDatagen {
 					.add(TrashedRegistry.TRASH_CAN.getKey())
 					.add(TrashedRegistry.FLUID_TRASH_CAN.getKey())
 					.add(TrashedRegistry.ENERGY_TRASH_CAN.getKey());
+		}
+	}
+
+	public static class TrashedDamageTypeTags extends DamageTypeTagsProvider {
+		public TrashedDamageTypeTags(PackOutput output, CompletableFuture<Provider> lookupProvider) {
+			super(output, lookupProvider, Trashed.MOD_ID);
+		}
+
+		@Override
+		protected void addTags(Provider registries) {
+			tag(DamageTypeTags.CAN_BREAK_ARMOR_STAND)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.BYPASSES_ARMOR)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.ALWAYS_MOST_SIGNIFICANT_FALL)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.BYPASSES_COOLDOWN)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.BYPASSES_INVULNERABILITY)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.BYPASSES_RESISTANCE)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.NO_IMPACT)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.NO_KNOCKBACK)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.WITHER_IMMUNE_TO)
+					.add(TrashedDamageTypes.TRASHED);
 		}
 	}
 }
