@@ -1,0 +1,10 @@
+// 26.3	2026-10-04T16:52:05.9659412	Registries for reloadable
+c43c8a85531c1924424909e124b7eb89a62233f4 data/trashed/advancement/recipes/redstone/energy_trash_can.json
+8104be5921c0452e5ccede45ce7df0ad0dbdcb30 data/trashed/advancement/recipes/redstone/fluid_trash_can.json
+c9868df6a0c7c98de8e879a6e54ff253f91cc7df data/trashed/advancement/recipes/redstone/trash_can.json
+66a70fb138a501b57ccbed43d69529fe13fe8ef2 data/trashed/loot_table/blocks/energy_trash_can.json
+e6ddb14c6364fa04824e372396a6c4db443e5245 data/trashed/loot_table/blocks/fluid_trash_can.json
+5868d985eb0474bd998cc619c282b80abffa89dc data/trashed/loot_table/blocks/trash_can.json
+1d929e0aabcc5227f5491dbbf0fe8a48f4645694 data/trashed/recipe/energy_trash_can.json
+8145c4453f6dd37f2b2809da01a3b79c49f6d13f data/trashed/recipe/fluid_trash_can.json
+059545a3bd0ac7509b73992878f2670bc95c11b3 data/trashed/recipe/trash_can.json
