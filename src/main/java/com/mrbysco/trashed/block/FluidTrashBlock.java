@@ -1,10 +1,11 @@
 package com.mrbysco.trashed.block;
 
-import com.mojang.serialization.MapCodec;
 import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.blockentity.FluidTrashBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -12,7 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,19 +23,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock {
-	public static final MapCodec<FluidTrashBlock> CODEC = simpleCodec(FluidTrashBlock::new);
 
 	public FluidTrashBlock(Properties properties) {
 		super(properties);
 		this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ENABLED, true).setValue(WATERLOGGED, false));
-	}
-
-	@Override
-	protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-		return CODEC;
 	}
 
 	@Override
@@ -49,10 +43,10 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 
 	@Override
 	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
-		if(!player.isShiftKeyDown()) {
+		if (!player.isShiftKeyDown()) {
 			var itemHandler = ItemAccess.forPlayerInteraction(player, hand).oneByOne();
 			var fluidCap = itemHandler.getCapability(Capabilities.Fluid.ITEM);
-			if(fluidCap != null) {
+			if (fluidCap != null) {
 				if (!level.isClientSide()) {
 					FluidUtil.interactWithFluidHandler(player, hand, level, pos, result.getDirection(), null);
 					return InteractionResult.SUCCESS_SERVER;
@@ -69,8 +63,8 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 	//#region Power section
 
 	@Override
-	public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
-		super.playerDestroy(level, player, pos, state, blockEntity, stack);
+	public void playerDestroy(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack destroyedWith) {
+		super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
 		if (blockEntity instanceof FluidTrashBlockEntity) {
 			level.updateNeighbourForOutputSignal(pos, this);
 		}
@@ -91,7 +85,7 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 	}
 
 	@Override
-	protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @org.jetbrains.annotations.Nullable Orientation orientation, boolean movedByPiston) {
+	protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
 		this.updateState(level, pos, state);
 	}
 

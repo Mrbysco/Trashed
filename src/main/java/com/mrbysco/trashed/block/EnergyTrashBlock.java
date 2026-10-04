@@ -1,14 +1,12 @@
 package com.mrbysco.trashed.block;
 
-import com.mojang.serialization.MapCodec;
 import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.blockentity.EnergyTrashBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,15 +15,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBlock {
-	public static final MapCodec<EnergyTrashBlock> CODEC = simpleCodec(EnergyTrashBlock::new);
 
 	public EnergyTrashBlock(Properties properties) {
 		super(properties);
-	}
-
-	@Override
-	protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-		return CODEC;
 	}
 
 	@Override
@@ -38,8 +30,8 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	}
 
 	@Override
-	public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
-		super.playerDestroy(level, player, pos, state, blockEntity, stack);
+	public void playerDestroy(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, @org.jspecify.annotations.Nullable BlockEntity blockEntity, ItemStack destroyedWith) {
+		super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
 		if (blockEntity instanceof EnergyTrashBlockEntity) {
 			level.updateNeighbourForOutputSignal(pos, this);
 		}

@@ -5,6 +5,7 @@ import com.mrbysco.trashed.block.TrashBlock;
 import com.mrbysco.trashed.block.TrashType;
 import com.mrbysco.trashed.init.TrashedDamageTypes;
 import com.mrbysco.trashed.init.TrashedRegistry;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
@@ -16,14 +17,15 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.core.registries.SingleRegistryBootstrap;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.tags.DamageTypeTagsProvider;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
@@ -31,13 +33,15 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.jetbrains.annotations.Nullable;
@@ -48,20 +52,26 @@ import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber
 public class TrashedDatagen {
+
+	public static final RegistrySetBuilder RELOADABLE_BUILDER = new RegistrySetBuilder()
+			.add(RecipeProvider.asBootstrap(TrashedRecipeProvider::new))
+			.add(Registries.LOOT_TABLE, TrashedLootProvider.create());
+
+	public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
+			.add(Registries.DAMAGE_TYPE, context -> {
+				context.register(TrashedDamageTypes.TRASHED, new DamageType("trashed", 0.0F));
+			});
+
 	@SubscribeEvent
 	public static void gatherData(GatherDataEvent.Client event) {
-		DataGenerator generator = event.getGenerator();
-		PackOutput packOutput = generator.getPackOutput();
-		CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
+		event.createWorldRegistryObjects(BUILDER);
+		event.createReloadableRegistryObjects(RELOADABLE_BUILDER);
 
-		generator.addProvider(true, new TrashedLootProvider(packOutput, lookupProvider));
-		generator.addProvider(true, new TrashedRecipeProvider.Runner(packOutput, lookupProvider));
-		generator.addProvider(true, new TrashedBlockTags(packOutput, lookupProvider));
-		lookupProvider = generator.addProvider(true, new TrashedDatagenProvider(packOutput, lookupProvider, Set.of(Trashed.MOD_ID))).getRegistryProvider();
-		generator.addProvider(true, new TrashedDamageTypeTags(packOutput, lookupProvider));
+		event.createProvider(TrashedBlockTags::new);
+		event.createProvider(TrashedDamageTypeTags::new);
 
-		generator.addProvider(true, new TrashedLanguageProvider(packOutput));
-		generator.addProvider(true, new TrashedModelProvider(packOutput));
+		event.createProvider(TrashedLanguageProvider::new);
+		event.createProvider(TrashedModelProvider::new);
 	}
 
 	public static class TrashedModelProvider extends ModelProvider {
@@ -144,24 +154,20 @@ public class TrashedDatagen {
 		}
 	}
 
-	public static class TrashedDatagenProvider extends DatapackBuiltinEntriesProvider {
-		public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder().add(Registries.DAMAGE_TYPE, context -> {
-			context.register(TrashedDamageTypes.TRASHED, new DamageType("trashed", 0.0F));
-		});
+	private static class TrashedLootProvider {
 
-		public TrashedDatagenProvider(PackOutput output, CompletableFuture<Provider> registries, Set<String> modIds) {
-			super(output, registries, BUILDER, modIds);
-		}
-	}
-
-	private static class TrashedLootProvider extends LootTableProvider {
-		public TrashedLootProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
-			super(packOutput, Set.of(), List.of(new SubProviderEntry(Blocks::new, LootContextParamSets.BLOCK)), lookupProvider);
+		public static SingleRegistryBootstrap<LootTable> create() {
+			return new LootTableProvider(
+					BuiltInLootTables.all(),
+					List.of(
+							new LootTableProvider.SubProviderEntry(Blocks::new, LootContextParamSets.BLOCK)
+					)
+			);
 		}
 
 		private static class Blocks extends BlockLootSubProvider {
 
-			protected Blocks(HolderLookup.Provider provider) {
+			protected Blocks(LootTableSubProvider.Context provider) {
 				super(Set.of(), FeatureFlags.REGISTRY.allFlags(), provider);
 			}
 
@@ -180,8 +186,8 @@ public class TrashedDatagen {
 	}
 
 	private static class TrashedRecipeProvider extends RecipeProvider {
-		public TrashedRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
-			super(provider, recipeOutput);
+		public TrashedRecipeProvider(BootstrapContext<Recipe<?>> recipeOutput, BootstrapContext<Advancement> advancementOutput) {
+			super(recipeOutput, advancementOutput);
 		}
 
 		@Override
@@ -213,22 +219,6 @@ public class TrashedDatagen {
 					.unlockedBy("has_cobblestone", has(Tags.Items.COBBLESTONES))
 					.unlockedBy("has_hopper", has(Items.HOPPER)).save(this.output);
 		}
-
-		public static class Runner extends RecipeProvider.Runner {
-			public Runner(PackOutput output, CompletableFuture<Provider> completableFuture) {
-				super(output, completableFuture);
-			}
-
-			@Override
-			protected RecipeProvider createRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
-				return new TrashedRecipeProvider(provider, recipeOutput);
-			}
-
-			@Override
-			public String getName() {
-				return "Trashed Recipes";
-			}
-		}
 	}
 
 	public static class TrashedBlockTags extends BlockTagsProvider {
@@ -239,9 +229,9 @@ public class TrashedDatagen {
 		@Override
 		protected void addTags(Provider provider) {
 			this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
-					.add(TrashedRegistry.TRASH_CAN.getKey())
-					.add(TrashedRegistry.FLUID_TRASH_CAN.getKey())
-					.add(TrashedRegistry.ENERGY_TRASH_CAN.getKey());
+					.add(TrashedRegistry.TRASH_CAN.key())
+					.add(TrashedRegistry.FLUID_TRASH_CAN.key())
+					.add(TrashedRegistry.ENERGY_TRASH_CAN.key());
 		}
 	}
 

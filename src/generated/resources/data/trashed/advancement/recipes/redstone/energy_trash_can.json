@@ -33,7 +33,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "trashed:energy_trash_can"
+        "recipes": "trashed:energy_trash_can"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

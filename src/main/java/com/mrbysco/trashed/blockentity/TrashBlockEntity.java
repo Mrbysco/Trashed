@@ -341,7 +341,7 @@ public class TrashBlockEntity extends RandomizableContainerBlockEntity {
 	public CompoundTag getPersistentData() {
 		CompoundTag tag = new CompoundTag();
 		try (ProblemReporter.ScopedCollector problemreporter$scopedcollector = new ProblemReporter.ScopedCollector(Trashed.LOGGER)) {
-			HolderLookup.Provider lookupProvider = this.level != null ? this.level.registryAccess() : VanillaRegistries.createLookup();
+			HolderLookup.Provider lookupProvider = this.level != null ? this.level.registryAccess() : VanillaRegistries.createWorldLookup();
 			TagValueOutput output = TagValueOutput.createWithContext(problemreporter$scopedcollector, lookupProvider);
 			this.saveAdditional(output);
 			tag.merge(output.buildResult());

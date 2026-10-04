@@ -33,7 +33,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "trashed:trash_can"
+        "recipes": "trashed:trash_can"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

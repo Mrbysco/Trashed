@@ -1,12 +1,13 @@
 package com.mrbysco.trashed.block;
 
-import com.mojang.serialization.MapCodec;
 import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.blockentity.TrashBlockEntity;
 import com.mrbysco.trashed.blockentity.TrashSlaveBlockEntity;
 import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -19,7 +20,6 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -36,7 +36,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
-	public static final MapCodec<TrashBlock> CODEC = simpleCodec(TrashBlock::new);
 
 	private static final VoxelShape BOTTOM_INSIDE = Block.box(2.5D, 0.0D, 2.5D, 13.5D, 16.0D, 13.5D);
 	private static final VoxelShape BOTTOM_INSIDE_HOLLOW = Block.box(2.5D, 0.0D, 2.5D, 13.5D, 15.0D, 13.5D);
@@ -52,11 +51,6 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	public TrashBlock(Properties properties) {
 		super(properties);
 		this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(TYPE, TrashType.SINGLE).setValue(ENABLED, true).setValue(WATERLOGGED, false));
-	}
-
-	@Override
-	protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-		return CODEC;
 	}
 
 	@Override
@@ -94,8 +88,8 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Override
-	public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
-		super.playerDestroy(level, player, pos, state, blockEntity, stack);
+	public void playerDestroy(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, @org.jspecify.annotations.Nullable BlockEntity blockEntity, ItemStack destroyedWith) {
+		super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
 
 		BlockPos bePos = pos;
 		if (state.getValue(TYPE) == TrashType.BOTTOM) {

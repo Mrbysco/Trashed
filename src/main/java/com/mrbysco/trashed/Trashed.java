@@ -28,7 +28,7 @@ public class Trashed {
 	public static final String MOD_ID = "trashed";
 
 	public Trashed(IEventBus eventBus, Dist dist, ModContainer container) {
-		container.registerConfig(ModConfig.Type.SERVER, TrashedConfig.serverSpec);
+		container.registerConfig(ModConfig.Type.SYNCED, TrashedConfig.serverSpec);
 		eventBus.register(TrashedConfig.class);
 
 		eventBus.addListener(this::addTabContents);
