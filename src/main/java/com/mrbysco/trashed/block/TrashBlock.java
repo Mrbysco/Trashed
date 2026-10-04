@@ -225,12 +225,7 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 	}
 
 	@Nullable
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-		return createTrashTicker(level, blockEntityType, TrashedRegistry.TRASH_TILE.get());
-	}
-
-	@Nullable
-	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> p_151989_, BlockEntityType<? extends TrashBlockEntity> p_151990_) {
-		return level.isClientSide() ? null : createTickerHelper(p_151989_, p_151990_, TrashBlockEntity::serverTick);
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+		return level.isClientSide() ? null : createTickerHelper(type, TrashedRegistry.TRASH_TILE.get(), TrashBlockEntity::serverTick);
 	}
 }

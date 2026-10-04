@@ -77,7 +77,6 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 		return SimpleWaterloggedBlock.super.placeLiquid(level, pos, state, fluidStateIn);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public FluidState getFluidState(BlockState state) {
 		return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
@@ -86,13 +85,11 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 	/**
 	 * Rotation section
 	 */
-	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState rotate(BlockState state, Rotation rot) {
 		return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState mirror(BlockState state, Mirror mirrorIn) {
 		return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));

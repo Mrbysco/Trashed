@@ -23,6 +23,7 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.damagesource.DamageType;
@@ -115,21 +116,21 @@ public class TrashedDatagen {
 
 	public static class TrashedLanguageProvider extends LanguageProvider {
 		public TrashedLanguageProvider(PackOutput output) {
-			super(output, Trashed.MOD_ID, "en_us");
+			super(output, Trashed.MOD_ID, Language.DEFAULT);
 		}
 
 		@Override
 		protected void addTranslations() {
-			this.add(TrashedRegistry.TRASH_CAN.get(), "Trash Can");
-			this.add(TrashedRegistry.FLUID_TRASH_CAN.get(), "Fluid Trash Can");
-			this.add(TrashedRegistry.ENERGY_TRASH_CAN.get(), "Energy Trash Can");
+			addBlock(TrashedRegistry.TRASH_CAN, "Trash Can");
+			addBlock(TrashedRegistry.FLUID_TRASH_CAN, "Fluid Trash Can");
+			addBlock(TrashedRegistry.ENERGY_TRASH_CAN, "Energy Trash Can");
 
-			this.add("trashed.container.trashcan", "Trash Can");
-			this.add("trashed.trash_tooltip", "Jump in to trash yourself (Trash Can needs to be two blocks tall)");
-			this.add("death.attack.trashed", "%1$s was thrown into the trash");
+			add("trashed.container.trashcan", "Trash Can");
+			add("trashed.trash_tooltip", "Jump in to trash yourself (Trash Can needs to be two blocks tall)");
+			add("death.attack.trashed", "%1$s was thrown into the trash");
 
-			this.addConfig("trashing", "Trashing", "Trashing Settings");
-			this.addConfig("itemTrashQuantity", "Item Trash Quantity", "The quantity of items the Trash Can destroys every cycle [Default: 1]");
+			addConfig("trashing", "Trashing", "Trashing Settings");
+			addConfig("itemTrashQuantity", "Item Trash Quantity", "The quantity of items the Trash Can destroys every cycle [Default: 1]");
 
 		}
 
@@ -163,14 +164,14 @@ public class TrashedDatagen {
 
 			@Override
 			protected void generate() {
-				this.dropSelf(TrashedRegistry.TRASH_CAN.get());
-				this.dropSelf(TrashedRegistry.FLUID_TRASH_CAN.get());
-				this.dropSelf(TrashedRegistry.ENERGY_TRASH_CAN.get());
+				dropSelf(TrashedRegistry.TRASH_CAN.get());
+				dropSelf(TrashedRegistry.FLUID_TRASH_CAN.get());
+				dropSelf(TrashedRegistry.ENERGY_TRASH_CAN.get());
 			}
 
 			@Override
 			protected Iterable<Block> getKnownBlocks() {
-				return (Iterable<Block>) TrashedRegistry.BLOCKS.getEntries().stream().map(holder -> (Block) holder.get())::iterator;
+				return TrashedRegistry.BLOCKS.getEntries().stream().map(holder -> (Block) holder.get())::iterator;
 			}
 		}
 	}
@@ -234,11 +235,10 @@ public class TrashedDatagen {
 
 		@Override
 		protected void addTags(Provider provider) {
-			this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
-					TrashedRegistry.TRASH_CAN.get(),
-					TrashedRegistry.FLUID_TRASH_CAN.get(),
-					TrashedRegistry.ENERGY_TRASH_CAN.get()
-			);
+			this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
+					.add(TrashedRegistry.TRASH_CAN.getKey())
+					.add(TrashedRegistry.FLUID_TRASH_CAN.getKey())
+					.add(TrashedRegistry.ENERGY_TRASH_CAN.getKey());
 		}
 	}
 }
