@@ -1,1 +1,1 @@
-* Initial update to 26.1.1
+* Initial update to 26.2 (Thanks to [Up](https://github.com/Mrbysco/Trashed/pull/1))
