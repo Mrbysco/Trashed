@@ -23,8 +23,11 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.tags.DamageTypeTagsProvider;
+import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Items;
@@ -34,7 +37,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.jetbrains.annotations.Nullable;
@@ -45,8 +47,14 @@ import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber
 public class TrashedDatagen {
+	public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder().add(Registries.DAMAGE_TYPE, context -> {
+		context.register(TrashedDamageTypes.TRASHED, new DamageType("trashed", 0.0F));
+	});
+
 	@SubscribeEvent
 	public static void gatherData(GatherDataEvent.Client event) {
+		event.createDatapackRegistryObjects(BUILDER);
+
 		DataGenerator generator = event.getGenerator();
 		PackOutput packOutput = generator.getPackOutput();
 		CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
@@ -54,7 +62,7 @@ public class TrashedDatagen {
 		generator.addProvider(true, new TrashedLootProvider(packOutput, lookupProvider));
 		generator.addProvider(true, new TrashedRecipeProvider.Runner(packOutput, lookupProvider));
 		generator.addProvider(true, new TrashedBlockTags(packOutput, lookupProvider));
-		generator.addProvider(true, new TrashedDatagenProvider(packOutput, event.getLookupProvider(), Set.of(Trashed.MOD_ID)));
+		generator.addProvider(true, new TrashedDamageTypeTags(packOutput, lookupProvider));
 
 		generator.addProvider(true, new TrashedLanguageProvider(packOutput));
 		generator.addProvider(true, new TrashedModelProvider(packOutput));
@@ -115,21 +123,21 @@ public class TrashedDatagen {
 
 	public static class TrashedLanguageProvider extends LanguageProvider {
 		public TrashedLanguageProvider(PackOutput output) {
-			super(output, Trashed.MOD_ID, "en_us");
+			super(output, Trashed.MOD_ID, Language.DEFAULT);
 		}
 
 		@Override
 		protected void addTranslations() {
-			this.add(TrashedRegistry.TRASH_CAN.get(), "Trash Can");
-			this.add(TrashedRegistry.FLUID_TRASH_CAN.get(), "Fluid Trash Can");
-			this.add(TrashedRegistry.ENERGY_TRASH_CAN.get(), "Energy Trash Can");
+			addBlock(TrashedRegistry.TRASH_CAN, "Trash Can");
+			addBlock(TrashedRegistry.FLUID_TRASH_CAN, "Fluid Trash Can");
+			addBlock(TrashedRegistry.ENERGY_TRASH_CAN, "Energy Trash Can");
 
-			this.add("trashed.container.trashcan", "Trash Can");
-			this.add("trashed.trash_tooltip", "Jump in to trash yourself (Trash Can needs to be two blocks tall)");
-			this.add("death.attack.trashed", "%1$s was thrown into the trash");
+			add("trashed.container.trashcan", "Trash Can");
+			add("trashed.trash_tooltip", "Jump in to trash yourself (Trash Can needs to be two blocks tall)");
+			add("death.attack.trashed", "%1$s was thrown into the trash");
 
-			this.addConfig("trashing", "Trashing", "Trashing Settings");
-			this.addConfig("itemTrashQuantity", "Item Trash Quantity", "The quantity of items the Trash Can destroys every cycle [Default: 1]");
+			addConfig("trashing", "Trashing", "Trashing Settings");
+			addConfig("itemTrashQuantity", "Item Trash Quantity", "The quantity of items the Trash Can destroys every cycle [Default: 1]");
 
 		}
 
@@ -137,16 +145,6 @@ public class TrashedDatagen {
 			this.add("trashed.configuration." + path, name);
 			if (description != null && !description.isEmpty())
 				this.add("trashed.configuration." + path + ".tooltip", description);
-		}
-	}
-
-	public static class TrashedDatagenProvider extends DatapackBuiltinEntriesProvider {
-		public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder().add(Registries.DAMAGE_TYPE, context -> {
-			context.register(TrashedDamageTypes.TRASHED, new DamageType("trashed", 0.0F));
-		});
-
-		public TrashedDatagenProvider(PackOutput output, CompletableFuture<Provider> registries, Set<String> modIds) {
-			super(output, registries, BUILDER, modIds);
 		}
 	}
 
@@ -163,14 +161,14 @@ public class TrashedDatagen {
 
 			@Override
 			protected void generate() {
-				this.dropSelf(TrashedRegistry.TRASH_CAN.get());
-				this.dropSelf(TrashedRegistry.FLUID_TRASH_CAN.get());
-				this.dropSelf(TrashedRegistry.ENERGY_TRASH_CAN.get());
+				dropSelf(TrashedRegistry.TRASH_CAN.get());
+				dropSelf(TrashedRegistry.FLUID_TRASH_CAN.get());
+				dropSelf(TrashedRegistry.ENERGY_TRASH_CAN.get());
 			}
 
 			@Override
 			protected Iterable<Block> getKnownBlocks() {
-				return (Iterable<Block>) TrashedRegistry.BLOCKS.getEntries().stream().map(holder -> (Block) holder.get())::iterator;
+				return TrashedRegistry.BLOCKS.getEntries().stream().map(holder -> (Block) holder.get())::iterator;
 			}
 		}
 	}
@@ -234,11 +232,46 @@ public class TrashedDatagen {
 
 		@Override
 		protected void addTags(Provider provider) {
-			this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
-					TrashedRegistry.TRASH_CAN.get(),
-					TrashedRegistry.FLUID_TRASH_CAN.get(),
-					TrashedRegistry.ENERGY_TRASH_CAN.get()
-			);
+			this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
+					.add(TrashedRegistry.TRASH_CAN.get())
+					.add(TrashedRegistry.FLUID_TRASH_CAN.get())
+					.add(TrashedRegistry.ENERGY_TRASH_CAN.get());
+		}
+	}
+
+	public static class TrashedDamageTypeTags extends DamageTypeTagsProvider {
+		public TrashedDamageTypeTags(PackOutput output, CompletableFuture<Provider> lookupProvider) {
+			super(output, lookupProvider, Trashed.MOD_ID);
+		}
+
+		@Override
+		protected void addTags(Provider provider) {
+			tag(DamageTypeTags.CAN_BREAK_ARMOR_STAND)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.BYPASSES_ARMOR)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.ALWAYS_MOST_SIGNIFICANT_FALL)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.BYPASSES_COOLDOWN)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.BYPASSES_INVULNERABILITY)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.BYPASSES_RESISTANCE)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.NO_IMPACT)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.NO_KNOCKBACK)
+					.add(TrashedDamageTypes.TRASHED);
+
+			tag(DamageTypeTags.WITHER_IMMUNE_TO)
+					.add(TrashedDamageTypes.TRASHED);
 		}
 	}
 }

@@ -3,7 +3,6 @@ package com.mrbysco.trashed.block;
 import com.mojang.serialization.MapCodec;
 import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.blockentity.EnergyTrashBlockEntity;
-import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -12,8 +11,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -52,16 +49,5 @@ public class EnergyTrashBlock extends TrashBase implements SimpleWaterloggedBloc
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new EnergyTrashBlockEntity(pos, state);
-	}
-
-	@Nullable
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-		return createTrashTicker(level, blockEntityType, TrashedRegistry.ENERGY_TRASH_TILE.get());
-	}
-
-	@Nullable
-	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> blockEntityTicker,
-																					BlockEntityType<? extends EnergyTrashBlockEntity> entityType) {
-		return level.isClientSide() ? null : createTickerHelper(blockEntityTicker, entityType, EnergyTrashBlockEntity::serverTick);
 	}
 }

@@ -1,0 +1,10 @@
+// 26.1.2	2026-10-04T16:05:35.9206544	Tags for minecraft:damage_type mod id trashed
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/always_most_significant_fall.json
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/bypasses_armor.json
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/bypasses_cooldown.json
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/bypasses_invulnerability.json
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/bypasses_resistance.json
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/can_break_armor_stand.json
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/no_impact.json
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/no_knockback.json
+4ab10bf31536419fc5a1675abec99ecacf9b8e01 data/minecraft/tags/damage_type/wither_immune_to.json
