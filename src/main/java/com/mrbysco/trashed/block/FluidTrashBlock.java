@@ -20,6 +20,8 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,8 +49,18 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 
 	@Override
 	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
-		if (!level.isClientSide() && FluidUtil.interactWithFluidHandler(player, hand, level, pos, result.getDirection(), null)) {
-			return InteractionResult.SUCCESS_SERVER;
+		if(!player.isShiftKeyDown()) {
+			var itemHandler = ItemAccess.forPlayerInteraction(player, hand).oneByOne();
+			var fluidCap = itemHandler.getCapability(Capabilities.Fluid.ITEM);
+			if(fluidCap != null) {
+				if (!level.isClientSide()) {
+					FluidUtil.interactWithFluidHandler(player, hand, level, pos, result.getDirection(), null);
+					return InteractionResult.SUCCESS_SERVER;
+				}
+
+
+				return InteractionResult.SUCCESS;
+			}
 		}
 
 		return super.useItemOn(stack, state, level, pos, player, hand, result);

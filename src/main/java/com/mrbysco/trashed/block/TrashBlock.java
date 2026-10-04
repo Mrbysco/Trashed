@@ -185,14 +185,12 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 		}
 	}
 
+	@Nullable
 	public BlockEntity getTrashBlockEntity(Level level, BlockState state, BlockPos pos) {
-		if (state.getBlock() == this) {
-			if (state.getValue(TYPE) == TrashType.TOP) {
-				return level.getBlockEntity(pos.below());
-			} else {
-				return level.getBlockEntity(pos);
-			}
+		if (state.is(this)) {
+			return level.getBlockEntity(getTrashPos(state, pos));
 		}
+
 		return null;
 	}
 
@@ -226,6 +224,6 @@ public class TrashBlock extends TrashBase implements SimpleWaterloggedBlock {
 
 	@Nullable
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-		return level.isClientSide() ? null : createTickerHelper(type, TrashedRegistry.TRASH_TILE.get(), TrashBlockEntity::serverTick);
+		return level.isClientSide() ? null : createTickerHelper(type, TrashedRegistry.TRASH_TILE, TrashBlockEntity::serverTick);
 	}
 }

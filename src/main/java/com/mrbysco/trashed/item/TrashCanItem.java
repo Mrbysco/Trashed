@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 public class TrashCanItem extends BlockItem {
 	public TrashCanItem(Block block, Properties properties) {
-		super(block, properties);
+		super(block, properties.useBlockDescriptionPrefix());
 	}
 
 	@Override
