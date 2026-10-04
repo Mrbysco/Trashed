@@ -8,7 +8,7 @@ modId="trashed"
 version="${file.jarVersion}"
 displayName="Trashed"
 displayURL="https://minecraft.curseforge.com/projects/trashed"
-logoFile="logo.png"
+iconFile="logo.png"
 authors="ShyNieke, Mrbysco"
 description='''
 Adding Trash Can's to Minecraft.

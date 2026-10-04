@@ -32,6 +32,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Supplier;
+
 public abstract class TrashBase extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock, EntityBlock {
 	protected static final VoxelShape BOTTOM_PLATE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 0.5D, 14.0D);
 	protected static final VoxelShape SINGLE_INSIDE = Block.box(2.5D, 0.0D, 2.5D, 13.5D, 13.0D, 13.5D);
@@ -77,7 +79,6 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 		return SimpleWaterloggedBlock.super.placeLiquid(level, pos, state, fluidStateIn);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public FluidState getFluidState(BlockState state) {
 		return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
@@ -86,13 +87,11 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 	/**
 	 * Rotation section
 	 */
-	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState rotate(BlockState state, Rotation rot) {
 		return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState mirror(BlockState state, Mirror mirrorIn) {
 		return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
@@ -133,7 +132,7 @@ public abstract class TrashBase extends HorizontalDirectionalBlock implements Si
 	}
 
 	@Nullable
-	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> blockEntityType, BlockEntityType<E> blockEntityType1, BlockEntityTicker<? super E> entityTicker) {
-		return blockEntityType1 == blockEntityType ? (BlockEntityTicker<A>) entityTicker : null;
+	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> actual, Supplier<BlockEntityType<E>> expected, BlockEntityTicker<? super E> entityTicker) {
+		return expected.get() == actual ? (BlockEntityTicker<A>) entityTicker : null;
 	}
 }

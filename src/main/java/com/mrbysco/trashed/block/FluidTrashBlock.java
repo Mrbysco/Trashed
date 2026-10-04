@@ -3,7 +3,6 @@ package com.mrbysco.trashed.block;
 import com.mojang.serialization.MapCodec;
 import com.mrbysco.trashed.block.base.TrashBase;
 import com.mrbysco.trashed.blockentity.FluidTrashBlockEntity;
-import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -16,13 +15,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,13 +48,25 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 	}
 
 	@Override
-	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
-	                                      InteractionHand hand, BlockHitResult result) {
-		if (!level.isClientSide()) {
-			FluidUtil.interactWithFluidHandler(player, hand, level, pos, result.getDirection());
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
+		if(!player.isShiftKeyDown()) {
+			var itemHandler = ItemAccess.forPlayerInteraction(player, hand).oneByOne();
+			var fluidCap = itemHandler.getCapability(Capabilities.Fluid.ITEM);
+			if(fluidCap != null) {
+				if (!level.isClientSide()) {
+					FluidUtil.interactWithFluidHandler(player, hand, level, pos, result.getDirection(), null);
+					return InteractionResult.SUCCESS_SERVER;
+				}
+
+
+				return InteractionResult.SUCCESS;
+			}
 		}
+
 		return super.useItemOn(stack, state, level, pos, player, hand, result);
 	}
+
+	//#region Power section
 
 	@Override
 	public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
@@ -64,10 +75,6 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 			level.updateNeighbourForOutputSignal(pos, this);
 		}
 	}
-
-	/**
-	 * Power section
-	 */
 
 	@Override
 	public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
@@ -88,19 +95,11 @@ public class FluidTrashBlock extends TrashBase implements SimpleWaterloggedBlock
 		this.updateState(level, pos, state);
 	}
 
+	//#endregion
+
 	@Nullable
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new FluidTrashBlockEntity(pos, state);
-	}
-
-	@Nullable
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-		return createTrashTicker(level, blockEntityType, TrashedRegistry.FLUID_TRASH_TILE.get());
-	}
-
-	@Nullable
-	protected static <T extends BlockEntity> BlockEntityTicker<T> createTrashTicker(Level level, BlockEntityType<T> p_151989_, BlockEntityType<? extends FluidTrashBlockEntity> p_151990_) {
-		return level.isClientSide() ? null : createTickerHelper(p_151989_, p_151990_, FluidTrashBlockEntity::serverTick);
 	}
 }

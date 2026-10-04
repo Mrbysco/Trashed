@@ -7,7 +7,6 @@ import com.mrbysco.trashed.init.TrashedRegistry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -21,7 +20,7 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.slf4j.Logger;
 
-import java.util.List;
+import java.util.function.Supplier;
 
 @Mod(Trashed.MOD_ID)
 public class Trashed {
@@ -49,21 +48,20 @@ public class Trashed {
 	}
 
 	private void registerCapabilities(final RegisterCapabilitiesEvent event) {
-		event.registerBlockEntity(Capabilities.Energy.BLOCK, TrashedRegistry.ENERGY_TRASH_TILE.get(), (trashBlockEntity, side) ->
+		event.registerBlockEntity(Capabilities.Energy.BLOCK, TrashedRegistry.ENERGY_TRASH_TILE.get(), (trashBlockEntity, _) ->
 				trashBlockEntity.getStorage()
 		);
-		event.registerBlockEntity(Capabilities.Fluid.BLOCK, TrashedRegistry.FLUID_TRASH_TILE.get(), (trashBlockEntity, side) ->
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, TrashedRegistry.FLUID_TRASH_TILE.get(), (trashBlockEntity, _) ->
 				trashBlockEntity.getStorage()
 		);
-		event.registerBlockEntity(Capabilities.Item.BLOCK, TrashedRegistry.TRASH_TILE.get(), (trashBlockEntity, side) ->
+		event.registerBlockEntity(Capabilities.Item.BLOCK, TrashedRegistry.TRASH_TILE.get(), (trashBlockEntity, _) ->
 				VanillaContainerWrapper.of(trashBlockEntity)
 		);
 	}
 
 	private void addTabContents(final BuildCreativeModeTabContentsEvent event) {
 		if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
-			List<ItemStack> stacks = TrashedRegistry.ITEMS.getEntries().stream().map(reg -> new ItemStack(reg.get())).toList();
-			event.acceptAll(stacks);
+			TrashedRegistry.ITEMS.getEntries().stream().map(Supplier::get).forEach(event::accept);
 		}
 	}
 }
